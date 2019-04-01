@@ -11,6 +11,7 @@ pipeline {
         }
         stage('Checkout') {
             steps {
+                checkout scm
                 shHide( 'git remote set-url origin https://${GHTOKEN}@github.com/GreenSense/Serial1602ShieldSystemUIController.git' )
                 sh "git config --add remote.origin.fetch +refs/heads/master:refs/remotes/origin/master"
                 sh "git fetch --no-tags"
