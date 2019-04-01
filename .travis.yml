@@ -1,0 +1,12 @@
+sudo: required
+
+language: c#
+
+install:
+  - sudo sh prepare.sh
+  - sh init.sh
+
+script:
+  - sh increment-version.sh
+  - sh inject-version.sh
+  - sh build.sh
