@@ -49,6 +49,8 @@
     <Compile Include="DeviceInfo.cs" />
     <Compile Include="MenuInfo.cs" />
     <Compile Include="MenuItemInfo.cs" />
+    <Compile Include="SerialClientWrapper.cs" />
+    <Compile Include="MqttClientWrapper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

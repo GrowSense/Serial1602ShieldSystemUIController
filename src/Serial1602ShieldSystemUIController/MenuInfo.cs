@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace SerialSystemUI
+namespace Serial1602ShieldSystemUIController
 {
     public class MenuInfo
     {

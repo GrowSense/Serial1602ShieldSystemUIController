@@ -11,13 +11,13 @@ using uPLibrary.Networking.M2Mqtt;
 using System.Text;
 using System.Collections.Generic;
 
-namespace SerialSystemUI
+namespace Serial1602ShieldSystemUIController
 {
     public class SystemMenuController : IDisposable
     {
         public bool IsVerbose;
 
-        public SerialClient Client = null;
+        public SerialClientWrapper Client = null;
 
         public int WaitTimeBeforeRetry = 120;
 
@@ -58,12 +58,14 @@ namespace SerialSystemUI
 
         public Dictionary<string, MenuInfo> MenuStructure = new Dictionary<string, MenuInfo> ();
 
-        public MqttClient MqttClient;
+        public MqttClientWrapper MqttClient;
 
         public Queue<string> Alerts = new Queue<string> ();
 
-        public int AlertDisplayDuration = 10;
+        public int AlertDisplayDuration = 7;
         public DateTime AlertDisplayStartTime;
+
+        public int SleepTimeBetweenLoops = 100;
 
         public SystemMenuController ()
         {
@@ -114,8 +116,12 @@ namespace SerialSystemUI
 
         public void Run ()
         {
-
             DevicesDirectory = Path.GetFullPath (DevicesDirectory);
+
+            if (String.IsNullOrEmpty (DevicesDirectory))
+                throw new Exception ("DevicesDirectory property not set.");
+            if (!Directory.Exists (DevicesDirectory))
+                throw new Exception ("Cannot find devices directory: " + DevicesDirectory);
 
             Console.WriteLine ("Devices directory:");
             Console.WriteLine (DevicesDirectory);
@@ -125,9 +131,61 @@ namespace SerialSystemUI
             Console.WriteLine ("MQTT Username: " + MqttUsername);
             Console.WriteLine ("MQTT Port: " + MqttPort);
 
+            InitializeSerialPort ();
 
+            Console.WriteLine ("Device name: " + DeviceName);
+            Console.WriteLine ("Serial port name: " + SerialPortName);
+
+            EnsurePortIsOpen ();
+
+            SetupMQTT ();
+
+            // Wait until the first line arrives
+            Client.ReadLine ();
+
+            Thread.Sleep (1000);
+            SendMessageToDisplay (0, "Connected!");
+            SendMessageToDisplay (1, "                ");
+
+            Thread.Sleep (3000);
+
+            var isRunning = true;
+            while (isRunning) {
+                try {
+                    RunLoop ();
+                        
+                    Thread.Sleep (SleepTimeBetweenLoops);
+                    
+
+                } catch (Exception ex) {
+                    Console.WriteLine ("An error occurred:");
+                    Console.WriteLine (ex.ToString ());
+                    Console.WriteLine ();
+                    Console.WriteLine ("Waiting for 30 seconds then retrying");
+
+                    SendErrorEmail (ex, DeviceName, SmtpServer, EmailAddress);
+
+                    Thread.Sleep (30 * 1000);
+
+                    Run ();
+                }
+            }
+        }
+
+        public void InitializeSerialPort ()
+        {
+            var serialPort = GetSerialPort ();
+            if (serialPort != null)
+                Client = new SerialClientWrapper (serialPort);
+            else {
+                throw new Exception ("Device port not found.");
+            }
+
+        }
+
+        public SerialPort GetSerialPort ()
+        {
             SerialPort port = null;
-
             if (String.IsNullOrEmpty (SerialPortName)) {
                 Console.WriteLine ("Serial port not specified. Detecting.");
                 var detector = new SerialPortDetector ();
@@ -137,59 +195,12 @@ namespace SerialSystemUI
                 Console.WriteLine ("Serial port specified");
                 port = new SerialPort (SerialPortName, SerialBaudRate);
             }
-
-            Console.WriteLine ("Device name: " + DeviceName);
-            Console.WriteLine ("Serial port name: " + SerialPortName);
-
-            if (port == null) {
-                Console.WriteLine ("Error: Device port not found.");
-            } else {
-                Console.WriteLine ("Serial port: " + port.PortName);
-
-                Client = new SerialClient (port);
-
-                EnsurePortIsOpen ();
-
-                SetupMQTT ();
-
-                LoadDeviceList ();
-
-                // Wait until the first line arrives
-                Client.ReadLine ();
-
-                Thread.Sleep (1000);
-                SendMessageToDisplay (0, "Connected!");
-                SendMessageToDisplay (1, "                ");
-
-                Thread.Sleep (3000);
-
-                var isRunning = true;
-                while (isRunning) {
-                    try {
-                        RunLoop ();
-                        
-                        Thread.Sleep (10);
-                    
-
-                    } catch (Exception ex) {
-                        Console.WriteLine ("An error occurred:");
-                        Console.WriteLine (ex.ToString ());
-                        Console.WriteLine ();
-                        Console.WriteLine ("Waiting for 30 seconds then retrying");
-
-                        SendErrorEmail (ex, DeviceName, SmtpServer, EmailAddress);
-
-                        Thread.Sleep (30 * 1000);
-
-                        Run ();
-                    }
-                }
-            }
+            return port;
         }
 
         public void SetupMQTT ()
         {
-            MqttClient = new MqttClient (MqttHost, MqttPort, false, null, null, MqttSslProtocols.None);
+            MqttClient = new MqttClientWrapper (MqttHost, MqttPort);
 
             var clientId = Guid.NewGuid ().ToString ();
 
@@ -212,17 +223,19 @@ namespace SerialSystemUI
 
             // Refresh the device list every 100 loops
             //if (LoopNumber % 10 == 0)
-            LoadDeviceList ();
+            AddNewDevices ();
 
             EnsurePortIsOpen ();
 
             RenderDisplay ();
 
-            if (Client.Port.BytesToRead > 0) {
-                var line = Client.Port.ReadLine ();
+            if (Client.HasData) {
+                var line = Client.ReadLine ();
 
                 ProcessLine (line.Trim ());
             }
+
+            RemoveLostDevices ();
 
             Console.WriteLine ("===== End Loop");
 
@@ -250,20 +263,36 @@ namespace SerialSystemUI
 
         public void EnsurePortIsOpen ()
         {
-            if (!Client.Port.IsOpen) {
+            if (!Client.IsOpen) {
                 Client.Open ();
                 Thread.Sleep (1000);
                 Client.ReadLine ();
             }
         }
 
-        public void LoadDeviceList ()
+        public void AddNewDevices ()
         {
+            if (String.IsNullOrEmpty (DevicesDirectory))
+                throw new Exception ("DevicesDirectory property not set.");
+
             foreach (var deviceDir in Directory.GetDirectories(DevicesDirectory)) {
                 var deviceName = Path.GetFileName (deviceDir);
                 if (!DeviceList.ContainsKey (deviceName)) {
                     var deviceInfo = LoadDeviceInfo (deviceName);
                     AddDevice (deviceInfo);
+                }
+            }
+
+        }
+
+        public void RemoveLostDevices ()
+        {
+            for (int i = 0; i < DeviceList.Count; i++) {
+                var deviceInfo = GetDeviceByIndex (i);
+                var deviceDir = Path.Combine (DevicesDirectory, deviceInfo.DeviceName);
+                if (!Directory.Exists (deviceDir)) {
+                    RemoveDevice (deviceInfo);
+                    i--;
                 }
             }
         }
@@ -285,6 +314,17 @@ namespace SerialSystemUI
             foreach (var topic in GetSubscribeTopicsForDevice (info)) {
                 MqttClient.Subscribe (new string[] { topic }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
             }
+            Alerts.Enqueue ("0|" + info.DeviceLabel + "\r\n1|connected");
+        }
+
+        public void RemoveDevice (DeviceInfo info)
+        {
+            Console.WriteLine ("Removing device: " + info.DeviceName);
+            DeviceList.Remove (info.DeviceName);
+            foreach (var topic in GetSubscribeTopicsForDevice (info)) {
+                MqttClient.Unsubscribe (new string[] { topic });
+            }
+            Alerts.Enqueue ("0|" + info.DeviceLabel + "\r\n1|disconnected");
         }
 
         public void ProcessLine (string line)
@@ -610,11 +650,6 @@ namespace SerialSystemUI
 
         public void PublishUpdatedValue ()
         {
-            var incomingLinePrefix = ConfigurationSettings.AppSettings ["IncomingLinePrefix"];
-
-            var dividerCharacter = ConfigurationSettings.AppSettings ["DividerSplitCharacter"].ToCharArray () [0];
-            var equalsCharacter = ConfigurationSettings.AppSettings ["EqualsSplitCharacter"].ToCharArray () [0];
-
             var key = GetMenuItemInfoByIndex (CurrentDevice.DeviceGroup, SubMenuIndex).Key;
 
             var deviceTopic = "/" + CurrentDevice.DeviceName;
@@ -622,9 +657,7 @@ namespace SerialSystemUI
 
             var value = CurrentDevice.UpdatedData [key];
 
-            MqttClient.Publish (fullTopic, Encoding.UTF8.GetBytes (value),
-                MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE, // QoS level
-                true);
+            MqttClient.Publish (fullTopic, value);
         }
 
         public void SendErrorEmail (Exception error, string deviceName, string smtpServer, string emailAddress)
