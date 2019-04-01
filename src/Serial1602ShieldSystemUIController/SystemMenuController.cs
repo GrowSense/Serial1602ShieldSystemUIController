@@ -208,8 +208,8 @@ namespace SerialSystemUI
             LoopNumber++;
 
             // Refresh the device list every 100 loops
-            if (LoopNumber % 100 == 0)
-                LoadDeviceList ();
+            //if (LoopNumber % 10 == 0)
+            LoadDeviceList ();
 
             EnsurePortIsOpen ();
 
@@ -250,9 +250,10 @@ namespace SerialSystemUI
         {
             foreach (var deviceDir in Directory.GetDirectories(DevicesDirectory)) {
                 var deviceName = Path.GetFileName (deviceDir);
-                var deviceInfo = LoadDeviceInfo (deviceName);
-                if (!DeviceList.ContainsKey (deviceName))
+                if (!DeviceList.ContainsKey (deviceName)) {
+                    var deviceInfo = LoadDeviceInfo (deviceName);
                     DeviceList.Add (deviceName, deviceInfo);
+                }
             }
         }
 
