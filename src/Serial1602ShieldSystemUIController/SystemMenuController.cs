@@ -382,6 +382,9 @@ namespace SerialSystemUI
 
         public MenuItemInfo GetMenuItemInfoByIndex (string deviceGroup, int subMenuIndex)
         {
+            if (!MenuStructure.ContainsKey (deviceGroup))
+                return null;
+
             return GetMenuItemInfoByIndex (MenuStructure [deviceGroup], subMenuIndex);
         }
 
@@ -694,8 +697,11 @@ namespace SerialSystemUI
                         var deviceLabel = DeviceList [deviceName].DeviceLabel;
 
                         if (subTopic == "StatusMessage") {
-                            if (message != "Online")
+                            if (message != "Online") {
+                                Console.WriteLine ("Alert on device: " + deviceLabel);
+                                Console.WriteLine ("  " + message);
                                 Alerts.Enqueue ("0|" + deviceLabel + "\r\n1|" + message);
+                            }
                         }
                     }
                 }
