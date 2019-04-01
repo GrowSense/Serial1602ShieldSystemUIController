@@ -243,6 +243,7 @@ namespace SerialSystemUI
         {
             var list = new List<string> ();
             var deviceTopicPattern = "/" + deviceInfo.DeviceName + "/#";
+            Console.WriteLine ("Subscrice topic: " + deviceTopicPattern);
             list.Add (deviceTopicPattern);
             return list.ToArray ();
         }
@@ -279,8 +280,11 @@ namespace SerialSystemUI
 
         public void AddDevice (DeviceInfo info)
         {
+            Console.WriteLine ("Adding device: " + info.DeviceName);
             DeviceList.Add (info.DeviceName, info);
-            MqttClient.Subscribe (GetSubscribeTopicsForDevice (info), new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
+            foreach (var topic in GetSubscribeTopicsForDevice (info)) {
+                MqttClient.Subscribe (new string[] { topic }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
+            }
         }
 
         public void ProcessLine (string line)
