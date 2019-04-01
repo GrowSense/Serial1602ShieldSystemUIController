@@ -125,7 +125,6 @@ namespace SerialSystemUI
             Console.WriteLine ("MQTT Username: " + MqttUsername);
             Console.WriteLine ("MQTT Port: " + MqttPort);
 
-            LoadDeviceList ();
 
             SerialPort port = null;
 
@@ -153,6 +152,8 @@ namespace SerialSystemUI
 
                 SetupMQTT ();
 
+                LoadDeviceList ();
+
                 // Wait until the first line arrives
                 Client.ReadLine ();
 
@@ -167,7 +168,7 @@ namespace SerialSystemUI
                     try {
                         RunLoop ();
                         
-                        Thread.Sleep (20);
+                        Thread.Sleep (10);
                     
 
                     } catch (Exception ex) {
@@ -195,11 +196,13 @@ namespace SerialSystemUI
             MqttClient.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
             MqttClient.Connect (clientId, MqttUsername, MqttPassword);
 
-            var subscribeTopics = GetSubscribeTopics ();
+
+            // TODO: Remove if not needed. Subscriptions are made as devices are added.
+/*            var subscribeTopics = GetSubscribeTopics ();
 
             foreach (var topic in subscribeTopics) {
                 MqttClient.Subscribe (new string[] { topic }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
-            }
+            }*/
         }
 
         public void RunLoop ()
@@ -231,9 +234,16 @@ namespace SerialSystemUI
             var list = new List<string> ();
             foreach (var deviceEntry in DeviceList) {
                 var deviceInfo = deviceEntry.Value;
-                var deviceTopicPattern = "/" + deviceInfo.DeviceName + "/#";
-                list.Add (deviceTopicPattern);
+                list.AddRange (GetSubscribeTopicsForDevice (deviceInfo));
             }
+            return list.ToArray ();
+        }
+
+        public string[] GetSubscribeTopicsForDevice (DeviceInfo deviceInfo)
+        {
+            var list = new List<string> ();
+            var deviceTopicPattern = "/" + deviceInfo.DeviceName + "/#";
+            list.Add (deviceTopicPattern);
             return list.ToArray ();
         }
 
@@ -252,7 +262,7 @@ namespace SerialSystemUI
                 var deviceName = Path.GetFileName (deviceDir);
                 if (!DeviceList.ContainsKey (deviceName)) {
                     var deviceInfo = LoadDeviceInfo (deviceName);
-                    DeviceList.Add (deviceName, deviceInfo);
+                    AddDevice (deviceInfo);
                 }
             }
         }
@@ -265,6 +275,12 @@ namespace SerialSystemUI
             deviceInfo.DeviceGroup = File.ReadAllText (Path.Combine (deviceInfoDir, "group.txt")).Trim ();
 
             return deviceInfo;
+        }
+
+        public void AddDevice (DeviceInfo info)
+        {
+            DeviceList.Add (info.DeviceName, info);
+            MqttClient.Subscribe (GetSubscribeTopicsForDevice (info), new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
         }
 
         public void ProcessLine (string line)
