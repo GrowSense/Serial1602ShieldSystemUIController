@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Serial1602ShieldSystemUIController</id>
+    <version>1.0.0</version>
+    <authors>compulsivecoder</authors>
+    <owners>compulsivecoder</owners>
+    <projectUrl>https://github.com/GreenSense/Serial1602ShieldSystemUIController</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>An MQTT based controller for the GreenSense 1602 LCD shield system UI.</description>
+    <copyright>Copyright 2017</copyright>
+    <tags>arduino</tags>
+  </metadata>
+  <files>
+      <file src="bin/Release/Serial1602ShieldSystemUIController.exe" target="lib/net40" />
+      <file src="bin/Release/Serial1602ShieldSystemUIController.exe.config" target="lib/net40" />
+      <file src="bin/Release/duinocom.core.dll" target="lib/net40" />
+      <file src="bin/Release/M2Mqtt.Net.dll" target="lib/net40" />
+  </files>
+</package>
