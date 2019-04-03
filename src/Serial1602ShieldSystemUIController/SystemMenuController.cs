@@ -314,7 +314,7 @@ namespace Serial1602ShieldSystemUIController
             foreach (var topic in GetSubscribeTopicsForDevice (info)) {
                 MqttClient.Subscribe (new string[] { topic }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
             }
-            Alerts.Enqueue ("0|" + info.DeviceLabel + "\r\n1|connected");
+            Alerts.Enqueue ("0|" + info.DeviceLabel + "\r\n1|Detected");
         }
 
         public void RemoveDevice (DeviceInfo info)
@@ -324,7 +324,7 @@ namespace Serial1602ShieldSystemUIController
             foreach (var topic in GetSubscribeTopicsForDevice (info)) {
                 MqttClient.Unsubscribe (new string[] { topic });
             }
-            Alerts.Enqueue ("0|" + info.DeviceLabel + "\r\n1|disconnected");
+            Alerts.Enqueue ("0|" + info.DeviceLabel + "\r\n1|Removed");
         }
 
         public void ProcessLine (string line)
