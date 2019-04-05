@@ -325,6 +325,26 @@ namespace Serial1602ShieldSystemUIController
                 MqttClient.Unsubscribe (new string[] { topic });
             }
             Alerts.Enqueue ("0|" + info.DeviceLabel + "\r\n1|Removed");
+
+            FixMenuIndexAfterDeviceRemoved (info);
+        }
+
+        public void FixMenuIndexAfterDeviceRemoved (DeviceInfo info)
+        {
+            var index = 0;
+            var i = 0;
+            foreach (var entry in DeviceList) {
+                if (entry.Value.DeviceName == info.DeviceName) {
+                    index = i;
+                    break;
+                }
+
+                i++;
+            }
+
+            // If the menu index is greater than the index of the removed device then decrement the index
+            if (MenuIndex > index)
+                MenuIndex--;
         }
 
         public void ProcessLine (string line)
