@@ -2,15 +2,14 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProjectGuid>{E2CDE896-D69C-4B36-AB96-A245A9F70974}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{E3A74EEE-6FBE-4698-B072-A88D5B543148}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <RootNamespace>Serial1602ShieldSystemUIController</RootNamespace>
     <AssemblyName>Serial1602ShieldSystemUIController</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <UseMSBuildEngine>False</UseMSBuildEngine>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -18,45 +17,37 @@
     <DefineConstants>DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Externalconsole>true</Externalconsole>
-    <PlatformTarget>x86</PlatformTarget>
+    <ConsolePause>false</ConsolePause>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>full</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\..\bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Externalconsole>true</Externalconsole>
-    <PlatformTarget>x86</PlatformTarget>
+    <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="duinocom.core">
-      <HintPath>..\..\lib\ArduinoSerialControllerClient.1.1.1.5\lib\net40\duinocom.core.dll</HintPath>
-    </Reference>
     <Reference Include="M2Mqtt.Net">
       <HintPath>..\..\lib\M2Mqtt.4.3.0.0\lib\net45\M2Mqtt.Net.dll</HintPath>
     </Reference>
+    <Reference Include="duinocom.core">
+      <HintPath>..\..\lib\ArduinoSerialControllerClient.1.1.1.5\lib\net40\duinocom.core.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Arguments.cs" />
-    <Compile Include="SystemMenuController.cs" />
+    <Compile Include="BaseMenuItemInfo.cs" />
+    <Compile Include="CommandMenuItemInfo.cs" />
     <Compile Include="DeviceInfo.cs" />
     <Compile Include="MenuInfo.cs" />
-    <Compile Include="SerialClientWrapper.cs" />
+    <Compile Include="MenuInfoCreator.cs" />
     <Compile Include="MqttClientWrapper.cs" />
     <Compile Include="MqttMenuItemInfo.cs" />
-    <Compile Include="CommandMenuItemInfo.cs" />
-    <Compile Include="BaseMenuItemInfo.cs" />
     <Compile Include="ProcessStarter.cs" />
-    <Compile Include="MenuInfoCreator.cs" />
+    <Compile Include="SerialClientWrapper.cs" />
+    <Compile Include="SystemMenuController.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <ItemGroup>
-    <None Include="app.config" />
-  </ItemGroup>
 </Project>

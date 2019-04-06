@@ -39,7 +39,7 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <ProjectReference Include="..\Serial1602ShieldSystemUIController\Serial1602ShieldSystemUIController.csproj">
-      <Project>{E2CDE896-D69C-4B36-AB96-A245A9F70974}</Project>
+      <Project>{E3A74EEE-6FBE-4698-B072-A88D5B543148}</Project>
       <Name>Serial1602ShieldSystemUIController</Name>
     </ProjectReference>
   </ItemGroup>

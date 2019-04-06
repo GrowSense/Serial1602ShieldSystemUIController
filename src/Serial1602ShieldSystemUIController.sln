@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serial1602ShieldSystemUIController", "Serial1602ShieldSystemUIController\Serial1602ShieldSystemUIController.csproj", "{E2CDE896-D69C-4B36-AB96-A245A9F70974}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serial1602ShieldSystemUIController.Tests", "Serial1602ShieldSystemUIController.Tests\Serial1602ShieldSystemUIController.Tests.csproj", "{03359015-47BB-4B1E-A04E-706931E75B30}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serial1602ShieldSystemUIController.Tests.Integration", "Serial1602ShieldSystemUIController.Tests.Integration\Serial1602ShieldSystemUIController.Tests.Integration.csproj", "{41883F52-F0A1-467F-8E8A-E61535C2F8C3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serial1602ShieldSystemUIController.ClientConsole", "Serial1602ShieldSystemUIController.ClientConsole\Serial1602ShieldSystemUIController.ClientConsole.csproj", "{E2CDE896-D69C-4B36-AB96-A245A9F70974}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serial1602ShieldSystemUIController", "Serial1602ShieldSystemUIController\Serial1602ShieldSystemUIController.csproj", "{E3A74EEE-6FBE-4698-B072-A88D5B543148}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,5 +27,9 @@ Global
 		{E2CDE896-D69C-4B36-AB96-A245A9F70974}.Debug|x86.Build.0 = Debug|x86
 		{E2CDE896-D69C-4B36-AB96-A245A9F70974}.Release|x86.ActiveCfg = Release|x86
 		{E2CDE896-D69C-4B36-AB96-A245A9F70974}.Release|x86.Build.0 = Release|x86
+		{E3A74EEE-6FBE-4698-B072-A88D5B543148}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E3A74EEE-6FBE-4698-B072-A88D5B543148}.Debug|x86.Build.0 = Debug|Any CPU
+		{E3A74EEE-6FBE-4698-B072-A88D5B543148}.Release|x86.ActiveCfg = Release|Any CPU
+		{E3A74EEE-6FBE-4698-B072-A88D5B543148}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

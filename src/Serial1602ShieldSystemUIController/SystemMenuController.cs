@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using uPLibrary.Networking.M2Mqtt.Messages;
 using uPLibrary.Networking.M2Mqtt;
 using System.Text;
-using System.Collections.Generic;
 
 namespace Serial1602ShieldSystemUIController
 {
@@ -74,15 +73,17 @@ namespace Serial1602ShieldSystemUIController
 
         public MenuInfoCreator MenuCreator = new MenuInfoCreator ();
 
+        public bool IsInitialized = false;
+
         public SystemMenuController ()
         {
         }
 
         public void Run ()
         {
+            Initialize ();
             DevicesDirectory = Path.GetFullPath (DevicesDirectory);
 
-            MenuCreator.Create (this);
 
             if (String.IsNullOrEmpty (DevicesDirectory))
                 throw new Exception ("DevicesDirectory property not set.");
@@ -136,6 +137,15 @@ namespace Serial1602ShieldSystemUIController
                     Run ();
                 }
             }
+        }
+
+        public void Initialize ()
+        {
+            if (!IsInitialized) {
+                MenuCreator.Create (this);
+                IsInitialized = true;
+            }
+
         }
 
         public void InitializeSerialPort ()
@@ -501,7 +511,7 @@ namespace Serial1602ShieldSystemUIController
         public BaseMenuItemInfo GetMenuItemInfoByIndex (string deviceGroup, int subMenuIndex)
         {
             if (!MenuStructure.ContainsKey (deviceGroup))
-                return null;
+                throw new ArgumentException ("Group '" + deviceGroup + "' not supported.");
 
             return GetMenuItemInfoByIndex (MenuStructure [deviceGroup], subMenuIndex);
         }

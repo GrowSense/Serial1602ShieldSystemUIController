@@ -8,7 +8,7 @@ using System.Text;
 using System.Collections.Specialized;
 using System.Collections;
 
-namespace Serial1602ShieldSystemUIController
+namespace Serial1602ShieldSystemUIController.ClientConsole
 {
     public class Arguments
     {
@@ -24,10 +24,10 @@ namespace Serial1602ShieldSystemUIController
         {
             Parameters = new StringDictionary ();
             Regex splitter = new Regex (@"^-{1,2}|^/|=|:",
-                        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                                 RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
             Regex remover = new Regex (@"^['""]?(.*?)['""]?$",
-                       RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                                RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
             string parameter = null;
             string[] parts;
@@ -41,8 +41,8 @@ namespace Serial1602ShieldSystemUIController
             //   /param4=happy -param5 '--=nice=--'
             foreach (string arg in args) {
                 if (!arg.Contains (":")
-                && !arg.Contains ("=")
-                && !arg.StartsWith ("-"))
+                    && !arg.Contains ("=")
+                    && !arg.StartsWith ("-"))
                     keyless.Add (arg);
 
                 // Look for new parameters (-,/ or --) and a

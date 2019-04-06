@@ -8,6 +8,7 @@ namespace Serial1602ShieldSystemUIController.Tests
 
         public string MockReadLine;
         public string MockWriteLine;
+        public string Output;
 
         public bool MockIsOpen;
         public bool MockHasData;
@@ -54,6 +55,7 @@ namespace Serial1602ShieldSystemUIController.Tests
                 base.WriteLine (text);
 
             MockWriteLine = text;
+            Output += text + Environment.NewLine;
         }
     }
 }

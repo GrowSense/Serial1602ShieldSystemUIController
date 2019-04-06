@@ -13,7 +13,7 @@ using uPLibrary.Networking.M2Mqtt.Messages;
 using System.Diagnostics;
 using System.Net.Mail;
 
-namespace Serial1602ShieldSystemUIController
+namespace Serial1602ShieldSystemUIController.ClientConsole
 {
     class MainClass
     {
