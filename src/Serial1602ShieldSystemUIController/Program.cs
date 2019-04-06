@@ -35,7 +35,7 @@ namespace Serial1602ShieldSystemUIController
             var controller = new SystemMenuController ();
 
             controller.MqttUsername = GetConfigValue (arguments, "UserId");
-            controller.MqttUsername = GetConfigValue (arguments, "Password");
+            controller.MqttPassword = GetConfigValue (arguments, "Password");
             controller.MqttHost = GetConfigValue (arguments, "Host");
             controller.MqttPort = Convert.ToInt32 (GetConfigValue (arguments, "MqttPort"));
 

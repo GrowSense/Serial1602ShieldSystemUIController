@@ -7,7 +7,7 @@ namespace Serial1602ShieldSystemUIController
     {
         public string Group;
 
-        public Dictionary<string, MenuItemInfo> Items = new Dictionary<string, MenuItemInfo> ();
+        public Dictionary<string, BaseMenuItemInfo> Items = new Dictionary<string, BaseMenuItemInfo> ();
 
         public MenuInfo (string group)
         {

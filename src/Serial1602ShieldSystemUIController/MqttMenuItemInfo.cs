@@ -3,17 +3,13 @@ using System.Collections.Generic;
 
 namespace Serial1602ShieldSystemUIController
 {
-    public class MenuItemInfo
+    public class MqttMenuItemInfo : BaseMenuItemInfo
     {
-        public string Key;
         public string Label;
         public string PostFix;
-        public bool IsEditable;
         public Dictionary<int, string> Options;
-        public int MaxValue = 100;
-        public int MinValue = 0;
 
-        public MenuItemInfo (string key, string label, string postFix, bool isEditable)
+        public MqttMenuItemInfo (string key, string label, string postFix, bool isEditable)
         {
             Key = key;
             Label = label;
@@ -21,7 +17,16 @@ namespace Serial1602ShieldSystemUIController
             IsEditable = isEditable;
         }
 
-        public MenuItemInfo (string key, string label, string postFix, bool isEditable, int minValue, int maxValue)
+        public MqttMenuItemInfo (string key, string label, string postFix, bool isEditable, string defaultValue)
+        {
+            Key = key;
+            Label = label;
+            PostFix = postFix;
+            IsEditable = isEditable;
+            DefaultValue = defaultValue;
+        }
+
+        public MqttMenuItemInfo (string key, string label, string postFix, bool isEditable, int minValue, int maxValue)
         {
             Key = key;
             Label = label;
@@ -31,7 +36,7 @@ namespace Serial1602ShieldSystemUIController
             MaxValue = maxValue;
         }
 
-        public MenuItemInfo (string key, string label, string postFix, bool isEditable, Dictionary<int, string> options)
+        public MqttMenuItemInfo (string key, string label, string postFix, bool isEditable, Dictionary<int, string> options)
         {
             Key = key;
             Label = label;

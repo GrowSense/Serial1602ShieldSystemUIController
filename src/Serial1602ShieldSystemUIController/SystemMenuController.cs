@@ -62,61 +62,27 @@ namespace Serial1602ShieldSystemUIController
 
         public Queue<string> Alerts = new Queue<string> ();
 
-        public int AlertDisplayDuration = 7;
+        public int AlertDisplayDuration = 4;
         public DateTime AlertDisplayStartTime;
 
         public int SleepTimeBetweenLoops = 100;
 
+        public int MqttStatusPublishIntervalInSeconds = 30;
+        public DateTime LastMqttStatusPublished = DateTime.MinValue;
+
+        public ProcessStarter Starter = new ProcessStarter ();
+
+        public MenuInfoCreator MenuCreator = new MenuInfoCreator ();
+
         public SystemMenuController ()
         {
-            var irrigatorMenuStructure = new MenuInfo ("irrigator");
-            irrigatorMenuStructure.Items.Add ("C", new MenuItemInfo ("C", "Moisture", "%", false));
-            irrigatorMenuStructure.Items.Add ("I", new MenuItemInfo ("I", "Interval", "s", true));
-            irrigatorMenuStructure.Items.Add ("T", new MenuItemInfo ("T", "Threshold", "%", true));
-            var pumpOptions = new Dictionary<int, string> ();
-            pumpOptions.Add (0, "Off");
-            pumpOptions.Add (1, "On");
-            pumpOptions.Add (2, "Auto");
-            irrigatorMenuStructure.Items.Add ("P", new MenuItemInfo ("P", "Pump", "", true, pumpOptions));
-            irrigatorMenuStructure.Items.Add ("R", new MenuItemInfo ("R", "Raw", "", false));
-            irrigatorMenuStructure.Items.Add ("D", new MenuItemInfo ("D", "Dry", "", true));
-            irrigatorMenuStructure.Items.Add ("W", new MenuItemInfo ("W", "Wet", "", true));
-            MenuStructure.Add ("irrigator", irrigatorMenuStructure);
-
-            var monitorMenuStructure = new MenuInfo ("monitor");
-            monitorMenuStructure.Items.Add ("C", new MenuItemInfo ("C", "Moisture", "%", false));
-            monitorMenuStructure.Items.Add ("I", new MenuItemInfo ("I", "Interval", "s", true));
-            monitorMenuStructure.Items.Add ("R", new MenuItemInfo ("R", "Raw", "", false));
-            monitorMenuStructure.Items.Add ("D", new MenuItemInfo ("D", "Dry", "", true));
-            monitorMenuStructure.Items.Add ("W", new MenuItemInfo ("W", "Wet", "", true));
-            MenuStructure.Add ("monitor", monitorMenuStructure);
-
-            var ventilatorMenuStructure = new MenuInfo ("ventilator");
-            ventilatorMenuStructure.Items.Add ("A", new MenuItemInfo ("A", "Temp/Hum", "", false));
-            ventilatorMenuStructure.Items.Add ("I", new MenuItemInfo ("I", "Interval", "s", true));
-            ventilatorMenuStructure.Items.Add ("S", new MenuItemInfo ("S", "MinTemp", "c", true));
-            ventilatorMenuStructure.Items.Add ("U", new MenuItemInfo ("U", "MaxTemp", "c", true));
-            ventilatorMenuStructure.Items.Add ("G", new MenuItemInfo ("G", "MinHum", "%", true));
-            ventilatorMenuStructure.Items.Add ("J", new MenuItemInfo ("J", "MaxHum", "%", true));
-            MenuStructure.Add ("ventilator", ventilatorMenuStructure);
-
-            var illuminatorMenuStructure = new MenuInfo ("illuminator");
-            illuminatorMenuStructure.Items.Add ("L", new MenuItemInfo ("L", "Light", "%", false));
-            illuminatorMenuStructure.Items.Add ("I", new MenuItemInfo ("I", "Interval", "s", true));
-            illuminatorMenuStructure.Items.Add ("T", new MenuItemInfo ("T", "Threshold", "%", true));
-            illuminatorMenuStructure.Items.Add ("R", new MenuItemInfo ("R", "Raw", "", false));
-            illuminatorMenuStructure.Items.Add ("D", new MenuItemInfo ("D", "Dark", "", true));
-            illuminatorMenuStructure.Items.Add ("B", new MenuItemInfo ("B", "Bright", "", true));
-            MenuStructure.Add ("illuminator", illuminatorMenuStructure);
-
-            var uiMenuStructure = new MenuInfo ("ui");
-            //uiMenuStructure.Items.Add ("Z", new MenuItemInfo ("Z", "Version", "", false));
-            MenuStructure.Add ("ui", uiMenuStructure);
         }
 
         public void Run ()
         {
             DevicesDirectory = Path.GetFullPath (DevicesDirectory);
+
+            MenuCreator.Create (this);
 
             if (String.IsNullOrEmpty (DevicesDirectory))
                 throw new Exception ("DevicesDirectory property not set.");
@@ -237,9 +203,11 @@ namespace Serial1602ShieldSystemUIController
 
             RemoveLostDevices ();
 
+            PublishStatusToMqtt ();
+
             Console.WriteLine ("===== End Loop");
 
-            Thread.Sleep (100);
+            Thread.Sleep (50);
         }
 
         public string[] GetSubscribeTopics ()
@@ -274,6 +242,9 @@ namespace Serial1602ShieldSystemUIController
         {
             if (String.IsNullOrEmpty (DevicesDirectory))
                 throw new Exception ("DevicesDirectory property not set.");
+
+            if (!Directory.Exists (DevicesDirectory))
+                throw new Exception ("Can't find devices directory: " + DevicesDirectory);
 
             foreach (var deviceDir in Directory.GetDirectories(DevicesDirectory)) {
                 var deviceName = Path.GetFileName (deviceDir);
@@ -405,20 +376,10 @@ namespace Serial1602ShieldSystemUIController
                 var menuItemInfo = GetMenuItemInfoByIndex (CurrentDevice.DeviceGroup, SubMenuIndex);
 
                 if (menuItemInfo != null) {
-                    var valueLabel = menuItemInfo.Label;
-                    var valueKey = menuItemInfo.Key;
-
-                    var value = String.Empty;
-                    if (CurrentDevice.UpdatedData.ContainsKey (valueKey)) {
-                        value = CurrentDevice.UpdatedData [valueKey];
-                    } else if (CurrentDevice.Data.ContainsKey (valueKey)) {
-                        value = CurrentDevice.Data [valueKey];
-                    }
-                    value = FixValueForDisplay (value, valueKey, CurrentDevice);
-
-                    // Send the second line to the display
-                    var message = valueLabel + " " + value + menuItemInfo.PostFix;
-                    SendMessageToDisplay (1, message);
+                    if (menuItemInfo is MqttMenuItemInfo)
+                        RenderSubItemMqtt ((MqttMenuItemInfo)menuItemInfo);
+                    if (menuItemInfo is CommandMenuItemInfo)
+                        RenderSubItemCommand ((CommandMenuItemInfo)menuItemInfo);
 
                     didRenderSubItem = true;
                 }
@@ -429,23 +390,92 @@ namespace Serial1602ShieldSystemUIController
             }
         }
 
+        public void RenderSubItemMqtt (MqttMenuItemInfo menuItemInfo)
+        {
+            var valueLabel = menuItemInfo.Label;
+            var valueKey = menuItemInfo.Key;
+
+            var value = String.Empty;
+            if (CurrentDevice.UpdatedData.ContainsKey (valueKey)) {
+                value = CurrentDevice.UpdatedData [valueKey];
+            } else if (CurrentDevice.Data.ContainsKey (valueKey)) {
+                value = CurrentDevice.Data [valueKey];
+            }
+            value = FixValueForDisplay (value, valueKey, CurrentDevice);
+
+            // Send the second line to the display
+            var message = valueLabel + " " + value + menuItemInfo.PostFix;
+            SendMessageToDisplay (1, message);
+
+        }
+
+        public void RenderSubItemCommand (CommandMenuItemInfo menuItemInfo)
+        {
+            var valueLabel = menuItemInfo.Label;
+            var valueKey = menuItemInfo.Key;
+
+            var value = String.Empty;
+            if (CurrentDevice.UpdatedData.ContainsKey (valueKey)) {
+                value = CurrentDevice.UpdatedData [valueKey];
+            } else if (CurrentDevice.Data.ContainsKey (valueKey)) {
+                value = CurrentDevice.Data [valueKey];
+            }
+            value = FixValueForDisplay (value, valueKey, CurrentDevice);
+
+            // Send the second line to the display
+            var message = valueLabel + " " + value + menuItemInfo.PostFix;
+            SendMessageToDisplay (1, message);
+        }
+
         public string FixValueForDisplay (string value, string key, DeviceInfo info)
         {
             var menuItemInfo = GetMenuItemInfoByIndex (CurrentDevice.DeviceGroup, SubMenuIndex);
 
-            if (menuItemInfo.Options != null && menuItemInfo.Options.Count > 0) {
-                var valueInt = Convert.ToInt32 (value);
-                return menuItemInfo.Options [valueInt];
-            } else {
-                if (String.IsNullOrEmpty (value)) {
-                    if (info.DeviceGroup == "ventilator")
-                        return "0c 0%";
+            var fixedValue = value;
 
-                    if (key.Length == 1)
-                        return 0.ToString ();
+            if (String.IsNullOrEmpty (value)) {
+                fixedValue = menuItemInfo.DefaultValue;
+            } else if (menuItemInfo is MqttMenuItemInfo) {
+                var mqttMenuItemInfo = (MqttMenuItemInfo)menuItemInfo;
+                if (mqttMenuItemInfo.Options != null && mqttMenuItemInfo.Options.Count > 0) {
+                    var optionIndex = 0;
+                    Int32.TryParse (value, out optionIndex);
+                    fixedValue = mqttMenuItemInfo.Options [optionIndex];
+                }
+            } else if (menuItemInfo is CommandMenuItemInfo) {
+                var mqttMenuItemInfo = (CommandMenuItemInfo)menuItemInfo;
+                if (mqttMenuItemInfo.Options != null && mqttMenuItemInfo.Options.Count > 0) {
+                    var optionIndex = 0;
+                    Int32.TryParse (value, out optionIndex);
+                    fixedValue = GetCommandOptionKeyByIndex (mqttMenuItemInfo, optionIndex);
                 }
             }
-            return value;
+            return fixedValue;
+        }
+
+        public string GetCommandOptionKeyByIndex (CommandMenuItemInfo menuItemInfo, int index)
+        {
+            var output = "";
+            var i = 0;
+            foreach (var option in menuItemInfo.Options) {
+                if (i == index) {
+                    output = option.Key;
+                    break;
+                }
+                i++;
+            }
+            return output;
+        }
+
+        public string GetCommandOptionValueByIndex (CommandMenuItemInfo menuItemInfo, int index)
+        {
+            var i = 0;
+            foreach (var option in menuItemInfo.Options) {
+                if (i == index)
+                    return option.Value;
+                i++;
+            }
+            return String.Empty;
         }
 
         public DeviceInfo GetDeviceByIndex (int deviceIndex)
@@ -461,7 +491,7 @@ namespace Serial1602ShieldSystemUIController
             return null;
         }
 
-        public MenuItemInfo GetMenuItemInfoByIndex (string deviceGroup, int subMenuIndex)
+        public BaseMenuItemInfo GetMenuItemInfoByIndex (string deviceGroup, int subMenuIndex)
         {
             if (!MenuStructure.ContainsKey (deviceGroup))
                 return null;
@@ -469,7 +499,7 @@ namespace Serial1602ShieldSystemUIController
             return GetMenuItemInfoByIndex (MenuStructure [deviceGroup], subMenuIndex);
         }
 
-        public MenuItemInfo GetMenuItemInfoByIndex (MenuInfo menuStructure, int subMenuIndex)
+        public BaseMenuItemInfo GetMenuItemInfoByIndex (MenuInfo menuStructure, int subMenuIndex)
         {
             int i = 0;
             foreach (var entry in menuStructure.Items) {
@@ -487,41 +517,43 @@ namespace Serial1602ShieldSystemUIController
             if (Alerts.Count > 0) {
                 CancelAlert ();
             } else if (DeviceIsSelected) {
-                var menuStructureItem = GetMenuItemInfoByIndex (CurrentDevice.DeviceGroup, SubMenuIndex);
-
-                if (menuStructureItem.IsEditable) {
-                    var key = menuStructureItem.Key;
-
-                    var existingValueString = String.Empty;
-
-                    if (!CurrentDevice.UpdatedData.ContainsKey (key)) {
-                        CurrentDevice.UpdatedData [key] = CurrentDevice.Data [key];
-                    }
-
-                    existingValueString = CurrentDevice.UpdatedData [key];
-
-                    var existingValue = 0;
-
-                    if (String.IsNullOrEmpty (existingValueString)) {
-                        existingValueString = 0.ToString ();
-                    } else
-                        existingValue = Convert.ToInt32 (existingValueString);
-
-                    existingValue++;
-
-                    if (existingValue > menuStructureItem.MaxValue)
-                        existingValue = menuStructureItem.MinValue;
-                    if (existingValue < menuStructureItem.MinValue)
-                        existingValue = menuStructureItem.MaxValue;
-
-                    CurrentDevice.UpdatedData [key] = existingValue.ToString ();
-                   
-
-                    HasChanged = true;
-                }
+                SubMenuUp ();
             }
         }
 
+        public void SubMenuUp ()
+        {
+            var menuItemInfo = GetMenuItemInfoByIndex (CurrentDevice.DeviceGroup, SubMenuIndex);
+
+            if (menuItemInfo.IsEditable) {
+                var key = menuItemInfo.Key;
+
+                var existingValueString = String.Empty;
+
+                if (!CurrentDevice.UpdatedData.ContainsKey (key)) {
+                    if (!CurrentDevice.Data.ContainsKey (key))
+                        CurrentDevice.Data [key] = menuItemInfo.DefaultValue.ToString ();
+                    CurrentDevice.UpdatedData [key] = CurrentDevice.Data [key];
+                }
+
+                existingValueString = CurrentDevice.UpdatedData [key];
+
+                var existingValue = 0;
+                Int32.TryParse (existingValueString, out existingValue);
+
+                existingValue++;
+
+                if (existingValue > menuItemInfo.MaxValue)
+                    existingValue = menuItemInfo.MinValue;
+                if (existingValue < menuItemInfo.MinValue)
+                    existingValue = menuItemInfo.MaxValue;
+
+                CurrentDevice.UpdatedData [key] = existingValue.ToString ();
+                   
+
+                HasChanged = true;
+            }
+        }
 
         public void MenuDown ()
         {
@@ -629,11 +661,38 @@ namespace Serial1602ShieldSystemUIController
         {
             var isEditingValue = DeviceIsSelected && GetMenuItemInfoByIndex (CurrentDevice.DeviceGroup, SubMenuIndex).IsEditable;
             if (isEditingValue) {
-                PublishUpdatedValue ();
+                SubmitSelection ();
             } else {
                 DeviceIsSelected = !DeviceIsSelected;
             }
             HasChanged = true;
+        }
+
+        public void SubmitSelection ()
+        {
+            var menuItemInfo = GetMenuItemInfoByIndex (CurrentDevice.DeviceGroup, SubMenuIndex);
+            if (menuItemInfo is MqttMenuItemInfo)
+                PublishUpdatedValue ();
+            else if (menuItemInfo is CommandMenuItemInfo)
+                RunSelectedCommand ();
+        }
+
+        public void RunSelectedCommand ()
+        {
+            var menuItemInfo = (CommandMenuItemInfo)GetMenuItemInfoByIndex (CurrentDevice.DeviceGroup, SubMenuIndex);
+            var i = 0;
+
+            var optionIndex = 0;
+            if (CurrentDevice.UpdatedData.ContainsKey (menuItemInfo.Key)) {
+                var indexString = CurrentDevice.UpdatedData [menuItemInfo.Key];
+                Int32.TryParse (indexString, out optionIndex);
+            }
+
+            var command = GetCommandOptionValueByIndex (menuItemInfo, optionIndex);
+
+            SendMessageToDisplay (menuItemInfo.StartedText);
+
+            Starter.Start (command);
         }
 
         public void CancelAlert ()
@@ -675,9 +734,12 @@ namespace Serial1602ShieldSystemUIController
             var deviceTopic = "/" + CurrentDevice.DeviceName;
             var fullTopic = deviceTopic + "/" + key + "/in";
 
-            var value = CurrentDevice.UpdatedData [key];
+            if (CurrentDevice.UpdatedData.ContainsKey (key) &&
+                CurrentDevice.UpdatedData [key] != CurrentDevice.Data [key]) {
+                var value = CurrentDevice.UpdatedData [key];
 
-            MqttClient.Publish (fullTopic, value);
+                MqttClient.Publish (fullTopic, value);
+            }
         }
 
         public void SendErrorEmail (Exception error, string deviceName, string smtpServer, string emailAddress)
@@ -735,6 +797,22 @@ namespace Serial1602ShieldSystemUIController
                 Thread.Sleep (WaitTimeBeforeRetry * 1000);
 
                 SendMessageToDisplay (fullMessage);
+            }
+        }
+
+        public void PublishStatusToMqtt ()
+        {
+            var isTimeToPublish = LastMqttStatusPublished.AddSeconds (MqttStatusPublishIntervalInSeconds) < DateTime.Now;
+
+            if (isTimeToPublish) {
+                LastMqttStatusPublished = DateTime.Now;
+
+                var deviceTopic = "/" + DeviceName;
+                var fullTopic = deviceTopic + "/Time";
+
+                var value = DateTime.Now.ToString ();
+
+                MqttClient.Publish (fullTopic, value);
             }
         }
 
