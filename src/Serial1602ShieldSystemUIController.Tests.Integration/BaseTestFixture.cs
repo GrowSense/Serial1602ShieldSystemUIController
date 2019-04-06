@@ -21,6 +21,7 @@ namespace Serial1602ShieldSystemUIController.Tests.Integration
             Console.WriteLine ("");
             Console.WriteLine ("====================");
             Console.WriteLine ("Preparing test");
+            Console.WriteLine (TestContext.CurrentContext.Test.FullName);
 
             InitializeProjectDirectory ();
 
