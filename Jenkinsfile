@@ -43,6 +43,12 @@ pipeline {
                 sh 'sh build.sh'
             }
         }
+        stage('Test') {
+            when { expression { !shouldSkipBuild() } }
+            steps {
+                sh 'sh test.sh'
+            }
+        }
         stage('Pack') {
             when { expression { !shouldSkipBuild() } }
             steps {
