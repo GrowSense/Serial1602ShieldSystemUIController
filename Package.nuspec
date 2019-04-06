@@ -12,10 +12,8 @@
     <tags>arduino</tags>
   </metadata>
   <files>
-      <file src="bin/Release/Serial1602ShieldSystemUIController.dll" target="lib/net40" />
-      <file src="bin/Release/Serial1602ShieldSystemUIController.exe" target="lib/net40" />
-      <file src="bin/Release/Serial1602ShieldSystemUIController.exe.config" target="lib/net40" />
-      <file src="bin/Release/duinocom.core.dll" target="lib/net40" />
-      <file src="bin/Release/M2Mqtt.Net.dll" target="lib/net40" />
+      <file src="bin/Release/*.dll" target="lib/net40" />
+      <file src="bin/Release/*.exe" target="lib/net40" />
+      <file src="bin/Release/*.config" target="lib/net40" />
   </files>
 </package>
