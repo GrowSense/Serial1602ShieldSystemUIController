@@ -883,27 +883,47 @@ namespace Serial1602ShieldSystemUIController
                     var subTopic = topicSections [1];
 
                     if (DeviceList.ContainsKey (deviceName)) {
-                        if (IsVerbose) {
-                            Console.WriteLine ("Device name: " + deviceName);
-                            Console.WriteLine ("Subtopic: " + subTopic);
-                            Console.WriteLine ("Message: " + message);
-                        }
-                
-                        var deviceInfo = DeviceList [deviceName];
-                        deviceInfo.Data [subTopic] = message;
-
-                        var deviceLabel = DeviceList [deviceName].DeviceLabel;
-
-                        if (subTopic == "StatusMessage") {
-                            if (message != "Online") {
-                                Console.WriteLine ("Alert on device: " + deviceLabel);
-                                Console.WriteLine ("  " + message);
-                                Alerts.Enqueue ("0|" + deviceLabel + "\r\n1|" + message);
-                            }
-                        }
+                        ProcessIncomingMessageForDevice (deviceName, subTopic, message);
                     }
                 }
             }
+        }
+
+        public void ProcessIncomingMessageForDevice (string deviceName, string subTopic, string message)
+        {
+            if (IsVerbose) {
+                Console.WriteLine ("Device name: " + deviceName);
+                Console.WriteLine ("Subtopic: " + subTopic);
+                Console.WriteLine ("Message: " + message);
+            }
+
+            var menuItemInfo = GetMenuItemInfoByIndex (CurrentDevice.DeviceGroup, SubMenuIndex);
+
+            var originalValue = menuItemInfo.DefaultValue;
+                            
+            var deviceInfo = DeviceList [deviceName];
+
+            if (deviceInfo.Data.ContainsKey (subTopic))
+                originalValue = deviceInfo.Data [subTopic];
+
+            deviceInfo.Data [subTopic] = message;
+
+            var deviceLabel = DeviceList [deviceName].DeviceLabel;
+
+            if (subTopic == "StatusMessage") {
+                if (message != "Online") {
+                    Console.WriteLine ("Alert on device: " + deviceLabel);
+                    Console.WriteLine ("  " + message);
+                    Alerts.Enqueue ("0|" + deviceLabel + "\r\n1|" + message);
+                }
+            }
+
+            var key = menuItemInfo.Key;
+
+            var isCurrentlyViewing = (key == subTopic);
+            var hasChanged = originalValue != message;
+            if (isCurrentlyViewing && hasChanged)
+                HasChanged = true;
         }
 
         public void Dispose ()
