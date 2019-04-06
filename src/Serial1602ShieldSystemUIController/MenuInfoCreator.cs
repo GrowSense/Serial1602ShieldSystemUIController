@@ -63,7 +63,7 @@ namespace Serial1602ShieldSystemUIController
 #else
             clearDevicesOptions.Add ("Yes", "rm " + controller.DevicesDirectory + " -r");
 #endif
-            uiMenuStructure.Items.Add ("Reset", new CommandMenuItemInfo ("Reset", "Reset", "", true, clearDevicesOptions, "No", "Clearing devices"));
+            uiMenuStructure.Items.Add ("Reset", new CommandMenuItemInfo ("Reset", "Reset", "", true, clearDevicesOptions, "No", "Clearing\ndevices"));
 
             var rebootOptions = new Dictionary<string, string> ();
             rebootOptions.Add ("No", "");
@@ -72,7 +72,7 @@ namespace Serial1602ShieldSystemUIController
 #else
             rebootOptions.Add ("Yes", "reboot now");
 #endif
-            uiMenuStructure.Items.Add ("Reboot", new CommandMenuItemInfo ("Reboot", "Reboot", "", true, rebootOptions, "No", "Rebooting"));
+            uiMenuStructure.Items.Add ("Reboot", new CommandMenuItemInfo ("Reboot", "Reboot", "", true, rebootOptions, "No", "Rebooting\ncomputer"));
 
             controller.MenuStructure.Add ("ui", uiMenuStructure);
         }

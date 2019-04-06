@@ -207,7 +207,7 @@ namespace Serial1602ShieldSystemUIController
 
             Console.WriteLine ("===== End Loop");
 
-            Thread.Sleep (50);
+            Thread.Sleep (10);
         }
 
         public string[] GetSubscribeTopics ()
@@ -401,6 +401,9 @@ namespace Serial1602ShieldSystemUIController
             } else if (CurrentDevice.Data.ContainsKey (valueKey)) {
                 value = CurrentDevice.Data [valueKey];
             }
+
+            if (!CurrentDevice.Data.ContainsKey (valueKey))
+                CurrentDevice.Data [valueKey] = value;
             value = FixValueForDisplay (value, valueKey, CurrentDevice);
 
             // Send the second line to the display
@@ -420,6 +423,10 @@ namespace Serial1602ShieldSystemUIController
             } else if (CurrentDevice.Data.ContainsKey (valueKey)) {
                 value = CurrentDevice.Data [valueKey];
             }
+
+            if (!CurrentDevice.Data.ContainsKey (valueKey))
+                CurrentDevice.Data [valueKey] = value;
+
             value = FixValueForDisplay (value, valueKey, CurrentDevice);
 
             // Send the second line to the display
@@ -602,6 +609,7 @@ namespace Serial1602ShieldSystemUIController
             if (Alerts.Count > 0) {
                 CancelAlert ();
             } else if (!DeviceIsSelected) {
+                SubMenuIndex = 0;
                 if (MenuIndex == 0)
                     MenuIndex = DeviceList.Count - 1;
                 else
@@ -634,6 +642,7 @@ namespace Serial1602ShieldSystemUIController
             if (Alerts.Count > 0) {
                 CancelAlert ();
             } else if (!DeviceIsSelected) {
+                SubMenuIndex = 0;
                 if (MenuIndex >= DeviceList.Count - 1)
                     MenuIndex = 0;
                 else
@@ -659,8 +668,18 @@ namespace Serial1602ShieldSystemUIController
 
         public void MenuSelect ()
         {
-            var isEditingValue = DeviceIsSelected && GetMenuItemInfoByIndex (CurrentDevice.DeviceGroup, SubMenuIndex).IsEditable;
-            if (isEditingValue) {
+            var menuItemInfo = GetMenuItemInfoByIndex (CurrentDevice.DeviceGroup, SubMenuIndex);
+            var isEditingValue = DeviceIsSelected && menuItemInfo.IsEditable;
+            var valueHasChanged = false;
+            if (CurrentDevice.Data.ContainsKey (menuItemInfo.Key)) {
+                if (CurrentDevice.UpdatedData.ContainsKey (menuItemInfo.Key) &&
+                    CurrentDevice.UpdatedData [menuItemInfo.Key] != CurrentDevice.Data [menuItemInfo.Key]) {
+                    valueHasChanged = true;
+                }
+            } else
+                valueHasChanged = true;
+                    
+            if (isEditingValue && valueHasChanged) {
                 SubmitSelection ();
             } else {
                 DeviceIsSelected = !DeviceIsSelected;
@@ -680,7 +699,6 @@ namespace Serial1602ShieldSystemUIController
         public void RunSelectedCommand ()
         {
             var menuItemInfo = (CommandMenuItemInfo)GetMenuItemInfoByIndex (CurrentDevice.DeviceGroup, SubMenuIndex);
-            var i = 0;
 
             var optionIndex = 0;
             if (CurrentDevice.UpdatedData.ContainsKey (menuItemInfo.Key)) {
@@ -690,9 +708,24 @@ namespace Serial1602ShieldSystemUIController
 
             var command = GetCommandOptionValueByIndex (menuItemInfo, optionIndex);
 
+            // Reset back to the default option
+            CurrentDevice.UpdatedData [menuItemInfo.Key] = 0.ToString ();
+            CurrentDevice.Data [menuItemInfo.Key] = 0.ToString ();
+
             SendMessageToDisplay (menuItemInfo.StartedText);
 
             Starter.Start (command);
+
+            Thread.Sleep (3000); // TODO: Make this set by a property
+
+            if (Starter.IsError)
+                SendMessageToDisplay ("Error\noccurred.");
+            else {
+                SendMessageToDisplay (0, "Success.");
+                SendMessageToDisplay (1, "                ");
+            }
+
+            Thread.Sleep (3000); // TODO: Make this set by a property
         }
 
         public void CancelAlert ()
@@ -718,13 +751,14 @@ namespace Serial1602ShieldSystemUIController
 
         public void DisableMqtt ()
         {
-            EnableIncomingMqtt = false;
-            Thread.Sleep (2000);
+            // TODO: Remove if not needed
+            //EnableIncomingMqtt = false;
+            //Thread.Sleep (2000);
         }
 
         public void EnableMqtt ()
         {
-            EnableIncomingMqtt = true;
+            //EnableIncomingMqtt = true;
         }
 
         public void PublishUpdatedValue ()
@@ -737,6 +771,8 @@ namespace Serial1602ShieldSystemUIController
             if (CurrentDevice.UpdatedData.ContainsKey (key) &&
                 CurrentDevice.UpdatedData [key] != CurrentDevice.Data [key]) {
                 var value = CurrentDevice.UpdatedData [key];
+
+                CurrentDevice.Data [key] = value;
 
                 MqttClient.Publish (fullTopic, value);
             }
@@ -787,7 +823,17 @@ namespace Serial1602ShieldSystemUIController
         {
             try {
                 EnsurePortIsOpen ();
-                Client.WriteLine (fullMessage);
+
+                if (fullMessage.Trim ().Contains ("\n") && !fullMessage.Contains ("|")) {
+                    var parts = fullMessage.Split ('\n');
+
+                    if (parts.Length > 0)
+                        Client.WriteLine ("0|" + parts [0]);
+                    if (parts.Length > 1)
+                        Client.WriteLine ("1|" + parts [1]);
+                } else {
+                    Client.WriteLine (fullMessage);
+                }
             } catch (Exception ex) {
                 Console.WriteLine ("Failed to send message to device");
                 Console.WriteLine (ex.ToString ());
