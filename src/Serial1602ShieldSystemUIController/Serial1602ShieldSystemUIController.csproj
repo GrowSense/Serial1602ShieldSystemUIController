@@ -8,7 +8,7 @@
     <RootNamespace>Serial1602ShieldSystemUIController</RootNamespace>
     <AssemblyName>Serial1602ShieldSystemUIController</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
     <AssemblyOriginatorKeyFile>Serial1602ShieldSystemUIController.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
