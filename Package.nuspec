@@ -15,5 +15,6 @@
       <file src="bin/Release/*.dll" target="lib/net40" />
       <file src="bin/Release/*.exe" target="lib/net40" />
       <file src="bin/Release/*.config" target="lib/net40" />
+      <file src="bin/Release/*.mdb" target="lib/net40" />
   </files>
 </package>
