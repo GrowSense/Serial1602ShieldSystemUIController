@@ -35,7 +35,7 @@
       <HintPath>..\..\lib\M2Mqtt.4.3.0.0\lib\net45\M2Mqtt.Net.dll</HintPath>
     </Reference>
     <Reference Include="duinocom.core">
-      <HintPath>..\..\lib\ArduinoSerialControllerClient.1.1.1.5\lib\net40\duinocom.core.dll</HintPath>
+      <HintPath>..\..\lib\duinocom.core.1.2.0.16\lib\net40\duinocom.core.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
