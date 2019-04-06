@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serial1602ShieldSystemUIController.ClientConsole", "Serial1602ShieldSystemUIController\Serial1602ShieldSystemUIController.ClientConsole.csproj", "{E2CDE896-D69C-4B36-AB96-A245A9F70974}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serial1602ShieldSystemUIController", "Serial1602ShieldSystemUIController\Serial1602ShieldSystemUIController.csproj", "{E2CDE896-D69C-4B36-AB96-A245A9F70974}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serial1602ShieldSystemUIController.Tests", "Serial1602ShieldSystemUIController.Tests\Serial1602ShieldSystemUIController.Tests.csproj", "{03359015-47BB-4B1E-A04E-706931E75B30}"
 EndProject
