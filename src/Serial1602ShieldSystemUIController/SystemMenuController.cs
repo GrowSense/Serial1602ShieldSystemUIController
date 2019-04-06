@@ -234,7 +234,7 @@ namespace Serial1602ShieldSystemUIController
         {
             var list = new List<string> ();
             var deviceTopicPattern = "/" + deviceInfo.DeviceName + "/#";
-            Console.WriteLine ("Subscrice topic: " + deviceTopicPattern);
+            Console.WriteLine ("Subscribe topic: " + deviceTopicPattern);
             list.Add (deviceTopicPattern);
             return list.ToArray ();
         }
