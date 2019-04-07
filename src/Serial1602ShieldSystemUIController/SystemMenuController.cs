@@ -346,7 +346,9 @@ namespace Serial1602ShieldSystemUIController
             Console.WriteLine ("Processing line:");
             Console.WriteLine (line);
 
-            if (line == "Starting...") {
+            if (line.StartsWith ("D;"))
+                ProcessDataLineFromDevice (line);
+            else if (line == "Starting...") {
                 StartDisplayOnDevice ();
             } else if (line == "up")
                 MenuUp ();
@@ -358,6 +360,31 @@ namespace Serial1602ShieldSystemUIController
                 MenuRight ();
             else if (line == "select")
                 MenuSelect ();
+        }
+
+        public void ProcessDataLineFromDevice (string line)
+        {
+            if (line.StartsWith ("D;")) {
+                var parts = line.Trim ().Trim (';').Trim (';').Split (';');
+
+                var deviceTopic = "/" + DeviceName;
+
+                foreach (var part in parts) {
+                    if (part.Contains (":")) {
+                        var subParts = part.Split (':');
+                        var key = subParts [0];
+                        var value = subParts [1];
+
+                        MqttClient.Publish (deviceTopic + "/" + key, value);
+                    }
+                }
+
+                var fullTopic = deviceTopic + "/Time";
+
+                var dateValue = DateTime.Now.ToString ();
+
+                MqttClient.Publish (fullTopic, dateValue);
+            }
         }
 
         public void StartDisplayOnDevice ()
@@ -883,7 +910,8 @@ namespace Serial1602ShieldSystemUIController
 
         public void PublishStatusToMqtt ()
         {
-            var isTimeToPublish = LastMqttStatusPublished.AddSeconds (MqttStatusPublishIntervalInSeconds) < DateTime.Now;
+            // TODO: Remove if not needed. Status should be published when the sketch outputs data.
+            /*var isTimeToPublish = LastMqttStatusPublished.AddSeconds (MqttStatusPublishIntervalInSeconds) < DateTime.Now;
 
             if (isTimeToPublish) {
                 LastMqttStatusPublished = DateTime.Now;
@@ -894,7 +922,7 @@ namespace Serial1602ShieldSystemUIController
                 var value = DateTime.Now.ToString ();
 
                 MqttClient.Publish (fullTopic, value);
-            }
+            }*/
         }
 
         // this code runs when a message was received
