@@ -195,12 +195,13 @@ namespace Serial1602ShieldSystemUIController
             MqttClient.Connect (clientId, MqttUsername, MqttPassword);
 
 
-            // TODO: Remove if not needed. Subscriptions are made as devices are added.
-/*            var subscribeTopics = GetSubscribeTopics ();
+            var subscribeTopics = new string[] {
+                "/garden/#"
+            };
 
             foreach (var topic in subscribeTopics) {
                 MqttClient.Subscribe (new string[] { topic }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
-            }*/
+            }
         }
 
         public void RunLoop ()
@@ -918,6 +919,14 @@ namespace Serial1602ShieldSystemUIController
 
                     if (DeviceList.ContainsKey (deviceName)) {
                         ProcessIncomingMessageForDevice (deviceName, subTopic, message);
+                    } else {
+                        if (subTopic == "StatusMessage") {
+                            if (message != "Online") {
+                                Console.WriteLine ("Alert for garden");
+                                Console.WriteLine ("  " + message);
+                                Alerts.Enqueue ("0|Garden\n1|" + message);
+                            }
+                        }
                     }
                 }
             }
