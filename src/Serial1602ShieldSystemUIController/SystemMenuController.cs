@@ -155,7 +155,7 @@ namespace Serial1602ShieldSystemUIController
             if (!Client.IsOpen)
                 Client.Open ();
 
-            Thread.Sleep (100);
+            Thread.Sleep (1000);
 
             // Wait until the first line arrives
             ProcessLineFromDevice (Client.ReadLine ());
