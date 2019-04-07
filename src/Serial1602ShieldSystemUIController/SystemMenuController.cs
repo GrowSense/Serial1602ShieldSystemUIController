@@ -343,23 +343,25 @@ namespace Serial1602ShieldSystemUIController
 
         public void ProcessLineFromDevice (string line)
         {
-            Console.WriteLine ("Processing line:");
-            Console.WriteLine (line);
+            if (!String.IsNullOrWhiteSpace (line)) {
+                Console.WriteLine ("Processing line:");
+                Console.WriteLine (line);
 
-            if (line.StartsWith ("D;"))
-                ProcessDataLineFromDevice (line);
-            else if (line == "Starting...") {
-                StartDisplayOnDevice ();
-            } else if (line == "up")
-                MenuUp ();
-            else if (line == "down")
-                MenuDown ();
-            else if (line == "left")
-                MenuLeft ();
-            else if (line == "right")
-                MenuRight ();
-            else if (line == "select")
-                MenuSelect ();
+                if (line.StartsWith ("D;"))
+                    ProcessDataLineFromDevice (line);
+                else if (line == "Starting...") {
+                    StartDisplayOnDevice ();
+                } else if (line == "up")
+                    MenuUp ();
+                else if (line == "down")
+                    MenuDown ();
+                else if (line == "left")
+                    MenuLeft ();
+                else if (line == "right")
+                    MenuRight ();
+                else if (line == "select")
+                    MenuSelect ();
+            }
         }
 
         public void ProcessDataLineFromDevice (string line)
