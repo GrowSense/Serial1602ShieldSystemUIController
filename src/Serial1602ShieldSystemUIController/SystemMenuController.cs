@@ -61,10 +61,10 @@ namespace Serial1602ShieldSystemUIController
 
         public Queue<string> Alerts = new Queue<string> ();
 
-        public int AlertDisplayDuration = 4;
+        public int AlertDisplayDuration = 3;
         public DateTime AlertDisplayStartTime;
 
-        public int SleepTimeBetweenLoops = 100;
+        public int SleepTimeBetweenLoops = 50;
 
         public int MqttStatusPublishIntervalInSeconds = 30;
         public DateTime LastMqttStatusPublished = DateTime.MinValue;
@@ -103,18 +103,9 @@ namespace Serial1602ShieldSystemUIController
             Console.WriteLine ("Device name: " + DeviceName);
             Console.WriteLine ("Serial port name: " + SerialPortName);
 
-            EnsurePortIsOpen ();
-
             SetupMQTT ();
 
-            // Wait until the first line arrives
-            Client.ReadLine ();
-
-            Thread.Sleep (1000);
-            SendMessageToDisplay (0, "Connected!");
-            SendMessageToDisplay (1, "                ");
-
-            Thread.Sleep (3000);
+            ConnectToSerialDevice ();
 
             var isRunning = true;
             while (isRunning) {
@@ -159,6 +150,26 @@ namespace Serial1602ShieldSystemUIController
 
         }
 
+        public void ConnectToSerialDevice ()
+        {
+            if (!Client.IsOpen)
+                Client.Open ();
+
+            Thread.Sleep (100);
+
+            // Wait until the first line arrives
+            ProcessLineFromDevice (Client.ReadLine ());
+
+        }
+
+        public void DisplayConnectedOnDevice ()
+        {
+            SendMessageToDisplay (0, "Connected!");
+            SendMessageToDisplay (1, "                ");
+
+            Thread.Sleep (2000);
+        }
+
         public SerialPort GetSerialPort ()
         {
             SerialPort port = null;
@@ -201,14 +212,14 @@ namespace Serial1602ShieldSystemUIController
             //if (LoopNumber % 10 == 0)
             AddNewDevices ();
 
-            EnsurePortIsOpen ();
+            EnsureConnectedToSerialDevice ();
 
-            RenderDisplay ();
+            RenderDisplayOnDevice ();
 
             if (Client.HasData) {
                 var line = Client.ReadLine ();
 
-                ProcessLine (line.Trim ());
+                ProcessLineFromDevice (line.Trim ());
             }
 
             RemoveLostDevices ();
@@ -239,12 +250,13 @@ namespace Serial1602ShieldSystemUIController
             return list.ToArray ();
         }
 
-        public void EnsurePortIsOpen ()
+        public void EnsureConnectedToSerialDevice ()
         {
+
+            var deviceHasReset = false;
+
             if (!Client.IsOpen) {
-                Client.Open ();
-                Thread.Sleep (1000);
-                Client.ReadLine ();
+                ConnectToSerialDevice ();
             }
         }
 
@@ -328,12 +340,14 @@ namespace Serial1602ShieldSystemUIController
                 MenuIndex--;
         }
 
-        public void ProcessLine (string line)
+        public void ProcessLineFromDevice (string line)
         {
             Console.WriteLine ("Processing line:");
             Console.WriteLine (line);
 
-            if (line == "up")
+            if (line == "Starting...") {
+                StartDisplayOnDevice ();
+            } else if (line == "up")
                 MenuUp ();
             else if (line == "down")
                 MenuDown ();
@@ -345,7 +359,17 @@ namespace Serial1602ShieldSystemUIController
                 MenuSelect ();
         }
 
-        public void RenderDisplay ()
+        public void StartDisplayOnDevice ()
+        {
+            EnsureConnectedToSerialDevice ();
+            DisplayConnectedOnDevice ();
+            HasChanged = true;
+            MenuIndex = 0;
+            SubMenuIndex = 0;
+            DeviceIsSelected = false;
+        }
+
+        public void RenderDisplayOnDevice ()
         {
             if (Alerts.Count > 0) {
                 if (AlertDisplayStartTime == DateTime.MinValue) {
@@ -832,7 +856,7 @@ namespace Serial1602ShieldSystemUIController
         public void SendMessageToDisplay (string fullMessage)
         {
             try {
-                EnsurePortIsOpen ();
+                EnsureConnectedToSerialDevice ();
 
                 if (fullMessage.Trim ().Contains ("\n") && !fullMessage.Contains ("|")) {
                     var parts = fullMessage.Split ('\n');

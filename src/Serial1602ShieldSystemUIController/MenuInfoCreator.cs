@@ -22,16 +22,16 @@ namespace Serial1602ShieldSystemUIController
             pumpOptions.Add (2, "Auto");
             irrigatorMenuStructure.Items.Add ("P", new MqttMenuItemInfo ("P", "Pump", "", true, pumpOptions));
             irrigatorMenuStructure.Items.Add ("R", new MqttMenuItemInfo ("R", "Raw", "", false));
-            irrigatorMenuStructure.Items.Add ("D", new MqttMenuItemInfo ("D", "Dry", "", true));
-            irrigatorMenuStructure.Items.Add ("W", new MqttMenuItemInfo ("W", "Wet", "", true));
+            irrigatorMenuStructure.Items.Add ("D", new MqttMenuItemInfo ("D", "Dry", "", true, 0, 1024));
+            irrigatorMenuStructure.Items.Add ("W", new MqttMenuItemInfo ("W", "Wet", "", true, 0, 1024));
             controller.MenuStructure.Add ("irrigator", irrigatorMenuStructure);
 
             var monitorMenuStructure = new MenuInfo ("monitor");
             monitorMenuStructure.Items.Add ("C", new MqttMenuItemInfo ("C", "Moisture", "%", false));
             monitorMenuStructure.Items.Add ("I", new MqttMenuItemInfo ("I", "Interval", "s", true));
             monitorMenuStructure.Items.Add ("R", new MqttMenuItemInfo ("R", "Raw", "", false));
-            monitorMenuStructure.Items.Add ("D", new MqttMenuItemInfo ("D", "Dry", "", true));
-            monitorMenuStructure.Items.Add ("W", new MqttMenuItemInfo ("W", "Wet", "", true));
+            monitorMenuStructure.Items.Add ("D", new MqttMenuItemInfo ("D", "Dry", "", true, 0, 1024));
+            monitorMenuStructure.Items.Add ("W", new MqttMenuItemInfo ("W", "Wet", "", true, 0, 1024));
             controller.MenuStructure.Add ("monitor", monitorMenuStructure);
 
             var ventilatorMenuStructure = new MenuInfo ("ventilator");
@@ -48,8 +48,8 @@ namespace Serial1602ShieldSystemUIController
             illuminatorMenuStructure.Items.Add ("I", new MqttMenuItemInfo ("I", "Interval", "s", true));
             illuminatorMenuStructure.Items.Add ("T", new MqttMenuItemInfo ("T", "Threshold", "%", true));
             illuminatorMenuStructure.Items.Add ("R", new MqttMenuItemInfo ("R", "Raw", "", false));
-            illuminatorMenuStructure.Items.Add ("D", new MqttMenuItemInfo ("D", "Dark", "", true));
-            illuminatorMenuStructure.Items.Add ("B", new MqttMenuItemInfo ("B", "Bright", "", true));
+            illuminatorMenuStructure.Items.Add ("D", new MqttMenuItemInfo ("D", "Dark", "", true, 0, 1024));
+            illuminatorMenuStructure.Items.Add ("B", new MqttMenuItemInfo ("B", "Bright", "", true, 0, 1024));
             controller.MenuStructure.Add ("illuminator", illuminatorMenuStructure);
 
             var uiMenuStructure = new MenuInfo ("ui");
