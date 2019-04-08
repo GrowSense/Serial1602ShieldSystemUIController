@@ -10,6 +10,8 @@ namespace Serial1602ShieldSystemUIController
     {
         public bool IsError { get; set; }
 
+        public bool IsVerbose { get; set; }
+
         public bool ThrowExceptionOnError = true;
 
         public bool WriteOutputToConsole = true;
@@ -80,10 +82,12 @@ namespace Serial1602ShieldSystemUIController
         /// <param name='arguments'></param>
         public virtual Process Start (string command, string arguments)
         {
-            Console.WriteLine ("");
-            Console.WriteLine ("Starting process:");
-            Console.WriteLine (command + " " + arguments);
-            Console.WriteLine ("");
+            if (IsVerbose) {
+                Console.WriteLine ("");
+                Console.WriteLine ("Starting process:");
+                Console.WriteLine (command + " " + arguments);
+                Console.WriteLine ("");
+            }
 
             // If the command has an extension (and is therefore an actual file)
             if (Path.GetExtension (command) != String.Empty) {
@@ -120,8 +124,10 @@ namespace Serial1602ShieldSystemUIController
             // Output the errors to the console
             process.ErrorDataReceived += new DataReceivedEventHandler (
                 delegate (object sender, DataReceivedEventArgs e) {
-                    Console.SetOut (c);
-                    c.WriteLine (e.Data);
+                    if (WriteOutputToConsole) {
+                        Console.SetOut (c);
+                        c.WriteLine (e.Data);
+                    }
                     OutputBuilder.Append (e.Data);
                 }
             );
@@ -129,8 +135,10 @@ namespace Serial1602ShieldSystemUIController
             // Output the data to the console
             process.OutputDataReceived += new DataReceivedEventHandler (
                 delegate (object sender, DataReceivedEventArgs e) {
-                    Console.SetOut (c);
-                    c.WriteLine (e.Data);
+                    if (WriteOutputToConsole) {
+                        Console.SetOut (c);
+                        c.WriteLine (e.Data);
+                    }
                     OutputBuilder.Append (e.Data);
                 }
             );

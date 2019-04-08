@@ -34,7 +34,6 @@ namespace Serial1602ShieldSystemUIController
         public string MqttPassword;
         public int MqttPort;
 
-
         public string SerialPortName;
         public int SerialBaudRate;
 
@@ -75,6 +74,8 @@ namespace Serial1602ShieldSystemUIController
 
         public bool IsInitialized = false;
 
+        public string SelfHostName = "";
+
         public SystemMenuController ()
         {
         }
@@ -82,6 +83,7 @@ namespace Serial1602ShieldSystemUIController
         public void Run ()
         {
             Initialize ();
+            SelfHostName = GetSelfHostName ();
             DevicesDirectory = Path.GetFullPath (DevicesDirectory);
 
 
@@ -377,15 +379,17 @@ namespace Serial1602ShieldSystemUIController
                         var key = subParts [0];
                         var value = subParts [1];
 
-                        MqttClient.Publish (deviceTopic + "/" + key, value);
+                        var fullTopic = deviceTopic + "/" + key;
+
+                        MqttClient.Publish (fullTopic, value);
                     }
                 }
 
-                var fullTopic = deviceTopic + "/Time";
+                var timeTopic = deviceTopic + "/Time";
 
                 var dateValue = DateTime.Now.ToString ();
 
-                MqttClient.Publish (fullTopic, dateValue);
+                MqttClient.Publish (timeTopic, dateValue);
             }
         }
 
@@ -851,8 +855,8 @@ namespace Serial1602ShieldSystemUIController
 
             if (areDetailsProvided) {
                 try {
-                    var subject = "Error: System UI controller";
-                    var body = "The following error was thrown by the system UI controller...\n\nDevice name: " + deviceName + "\n\n" + error.ToString ();
+                    var subject = "Error: System UI controller on '" + SelfHostName + "'";
+                    var body = "The following error was thrown by the system UI controller...\n\nSource host: " + SelfHostName + "\n\nDevice name: " + deviceName + "\n\n" + error.ToString ();
 
                     var mail = new MailMessage (emailAddress, emailAddress, subject, body);
 
@@ -997,6 +1001,20 @@ namespace Serial1602ShieldSystemUIController
             var hasChanged = originalValue != message;
             if (isCurrentlyViewing && hasChanged)
                 HasChanged = true;
+        }
+
+        public string GetSelfHostName ()
+        {
+            Starter.WriteOutputToConsole = false;
+            Starter.Start ("hostname");
+
+            var selfHostName = "";
+            if (!Starter.IsError)
+                selfHostName = Starter.Output.Trim ();
+
+            Console.WriteLine ("Host (self): " + selfHostName);
+
+            return selfHostName;
         }
 
         public void Dispose ()
