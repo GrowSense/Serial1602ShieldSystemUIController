@@ -41,7 +41,7 @@ namespace Serial1602ShieldSystemUIController
             fanOptions.Add (0, "Off");
             fanOptions.Add (1, "On");
             fanOptions.Add (2, "Auto");
-            ventilatorMenuStructure.Items.Add ("F", new MqttMenuItemInfo ("F", "Pump", "", true, fanOptions));
+            ventilatorMenuStructure.Items.Add ("F", new MqttMenuItemInfo ("F", "Fan", "", true, fanOptions));
             ventilatorMenuStructure.Items.Add ("S", new MqttMenuItemInfo ("S", "MinTemp", "c", true));
             ventilatorMenuStructure.Items.Add ("U", new MqttMenuItemInfo ("U", "MaxTemp", "c", true));
             ventilatorMenuStructure.Items.Add ("G", new MqttMenuItemInfo ("G", "MinHum", "%", true));
@@ -83,14 +83,23 @@ namespace Serial1602ShieldSystemUIController
 #endif
             uiMenuStructure.Items.Add ("Upgrade", new CommandMenuItemInfo ("Upgrade", "Upgrade", "", true, upgradeOptions, "No", "Upgrading"));
 
+            var reinstallOptions = new Dictionary<string, string> ();
+            reinstallOptions.Add ("No", "");
+#if DEBUG
+            reinstallOptions.Add ("Yes", "notify-send reinstalling");
+#else
+            reinstallOptions.Add ("Yes", "cd scripts-web && sh reinstall-plug-and-play-from-web.sh");
+#endif
+            uiMenuStructure.Items.Add ("Reinstall", new CommandMenuItemInfo ("Reinstall", "Reinstall", "", true, upgradeOptions, "No", "Reinstalling"));
+
             var clearDevicesOptions = new Dictionary<string, string> ();
             clearDevicesOptions.Add ("No", "");
 #if DEBUG
             clearDevicesOptions.Add ("Yes", "notify-send resetting");
 #else
-            clearDevicesOptions.Add ("Yes", "rm " + controller.DevicesDirectory + " -r");
+            clearDevicesOptions.Add ("Yes", "sh clean-devices.sh");
 #endif
-            uiMenuStructure.Items.Add ("Reset", new CommandMenuItemInfo ("Reset", "Reset", "", true, clearDevicesOptions, "No", "Clearing\ndevices"));
+            uiMenuStructure.Items.Add ("Clean", new CommandMenuItemInfo ("Clean", "Clean", "", true, clearDevicesOptions, "No", "Cleaning\ndevices"));
 
             var rebootOptions = new Dictionary<string, string> ();
             rebootOptions.Add ("No", "");
