@@ -37,6 +37,11 @@ namespace Serial1602ShieldSystemUIController
             var ventilatorMenuStructure = new MenuInfo ("ventilator");
             ventilatorMenuStructure.Items.Add ("A", new MqttMenuItemInfo ("A", "Temp/Hum", "", false));
             ventilatorMenuStructure.Items.Add ("I", new MqttMenuItemInfo ("I", "Interval", "s", true));
+            var fanOptions = new Dictionary<int, string> ();
+            fanOptions.Add (0, "Off");
+            fanOptions.Add (1, "On");
+            fanOptions.Add (2, "Auto");
+            ventilatorMenuStructure.Items.Add ("F", new MqttMenuItemInfo ("F", "Pump", "", true, fanOptions));
             ventilatorMenuStructure.Items.Add ("S", new MqttMenuItemInfo ("S", "MinTemp", "c", true));
             ventilatorMenuStructure.Items.Add ("U", new MqttMenuItemInfo ("U", "MaxTemp", "c", true));
             ventilatorMenuStructure.Items.Add ("G", new MqttMenuItemInfo ("G", "MinHum", "%", true));
@@ -45,16 +50,38 @@ namespace Serial1602ShieldSystemUIController
 
             var illuminatorMenuStructure = new MenuInfo ("illuminator");
             illuminatorMenuStructure.Items.Add ("L", new MqttMenuItemInfo ("L", "Light", "%", false));
+            var lightModeOptions = new Dictionary<int, string> ();
+            lightModeOptions.Add (0, "Off");
+            lightModeOptions.Add (1, "On");
+            lightModeOptions.Add (2, "Above Threshold");
+            lightModeOptions.Add (3, "Below Threshold");
+            lightModeOptions.Add (4, "PWM");
+            lightModeOptions.Add (5, "Supplement");
+            lightModeOptions.Add (6, "Timer");
+            illuminatorMenuStructure.Items.Add ("M", new MqttMenuItemInfo ("M", "Mode", "", true, lightModeOptions));
             illuminatorMenuStructure.Items.Add ("I", new MqttMenuItemInfo ("I", "Interval", "s", true));
             illuminatorMenuStructure.Items.Add ("T", new MqttMenuItemInfo ("T", "Threshold", "%", true));
             illuminatorMenuStructure.Items.Add ("R", new MqttMenuItemInfo ("R", "Raw", "", false));
             illuminatorMenuStructure.Items.Add ("D", new MqttMenuItemInfo ("D", "Dark", "", true, 0, 1024));
             illuminatorMenuStructure.Items.Add ("B", new MqttMenuItemInfo ("B", "Bright", "", true, 0, 1024));
+            illuminatorMenuStructure.Items.Add ("E", new MqttMenuItemInfo ("E", "Start Hour", "", true, 0, 23));
+            illuminatorMenuStructure.Items.Add ("F", new MqttMenuItemInfo ("F", "Start Minute", "", true, 0, 59));
+            illuminatorMenuStructure.Items.Add ("G", new MqttMenuItemInfo ("G", "Stop Hour", "", true, 0, 23));
+            illuminatorMenuStructure.Items.Add ("H", new MqttMenuItemInfo ("H", "Stop Minute", "", true, 0, 59));
             controller.MenuStructure.Add ("illuminator", illuminatorMenuStructure);
 
             var uiMenuStructure = new MenuInfo ("ui");
-            //uiMenuStructure.Items.Add ("Z", new MenuItemInfo ("Z", "Version", "", false));
             uiMenuStructure.Items.Add ("Status", new MqttMenuItemInfo ("StatusText", "Status", "", false, "Online"));
+            uiMenuStructure.Items.Add ("V", new MqttMenuItemInfo ("V", "Version", "", false));
+
+            var upgradeOptions = new Dictionary<string, string> ();
+            upgradeOptions.Add ("No", "");
+#if DEBUG
+            upgradeOptions.Add ("Yes", "notify-send upgrading");
+#else
+            upgradeOptions.Add ("Yes", "sh upgrade.sh");
+#endif
+            uiMenuStructure.Items.Add ("Upgrade", new CommandMenuItemInfo ("Upgrade", "Upgrade", "", true, upgradeOptions, "No", "Upgrading"));
 
             var clearDevicesOptions = new Dictionary<string, string> ();
             clearDevicesOptions.Add ("No", "");
