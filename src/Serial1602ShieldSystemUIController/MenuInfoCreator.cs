@@ -90,7 +90,7 @@ namespace Serial1602ShieldSystemUIController
 #else
             reinstallOptions.Add ("Yes", "cd scripts-web && sh reinstall-plug-and-play-from-web.sh");
 #endif
-            uiMenuStructure.Items.Add ("Reinstall", new CommandMenuItemInfo ("Reinstall", "Reinstall", "", true, upgradeOptions, "No", "Reinstalling"));
+            uiMenuStructure.Items.Add ("Reinstall", new CommandMenuItemInfo ("Reinstall", "Reinstall", "", true, reinstallOptions, "No", "Reinstalling"));
 
             var clearDevicesOptions = new Dictionary<string, string> ();
             clearDevicesOptions.Add ("No", "");
