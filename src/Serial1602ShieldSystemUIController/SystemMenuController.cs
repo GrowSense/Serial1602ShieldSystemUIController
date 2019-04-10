@@ -60,7 +60,7 @@ namespace Serial1602ShieldSystemUIController
 
         public Queue<string> Alerts = new Queue<string> ();
 
-        public int AlertDisplayDuration = 3;
+        public int AlertDisplayDuration = 5;
         public DateTime AlertDisplayStartTime;
 
         public int SleepTimeBetweenLoops = 50;
