@@ -126,5 +126,16 @@ namespace Serial1602ShieldSystemUIController.Tests.Integration
         {
             return 9600;
         }
+
+        public void CreateExampleDevice (string devicesDir, string name, string label, string group, string host)
+        {
+            var deviceDir = Path.Combine (devicesDir, name);
+            Directory.CreateDirectory (deviceDir);
+
+            File.WriteAllText (Path.Combine (deviceDir, "name.txt"), name);
+            File.WriteAllText (Path.Combine (deviceDir, "label.txt"), label);
+            File.WriteAllText (Path.Combine (deviceDir, "group.txt"), group);
+            File.WriteAllText (Path.Combine (deviceDir, "host.txt"), host);
+        }
     }
 }

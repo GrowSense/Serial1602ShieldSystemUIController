@@ -11,6 +11,7 @@ namespace Serial1602ShieldSystemUIController
         public string DeviceName;
         public string DeviceLabel;
         public string DeviceGroup;
+        public string DeviceHost;
 
         public DeviceInfo ()
         {

@@ -5,7 +5,6 @@ namespace Serial1602ShieldSystemUIController
 {
     public class CommandMenuItemInfo : BaseMenuItemInfo
     {
-        public string Label;
         public string PostFix;
         public Dictionary<string, string> Options;
 

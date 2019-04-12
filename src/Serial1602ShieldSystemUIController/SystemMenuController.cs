@@ -76,6 +76,8 @@ namespace Serial1602ShieldSystemUIController
 
         public string SelfHostName = "";
 
+        public bool ShowLocalDevicesOnly = false;
+
         public SystemMenuController ()
         {
         }
@@ -83,8 +85,6 @@ namespace Serial1602ShieldSystemUIController
         public void Run ()
         {
             Initialize ();
-            SelfHostName = GetSelfHostName ();
-            DevicesDirectory = Path.GetFullPath (DevicesDirectory);
 
 
             if (String.IsNullOrEmpty (DevicesDirectory))
@@ -136,7 +136,13 @@ namespace Serial1602ShieldSystemUIController
         {
             if (!IsInitialized) {
                 MenuCreator.Create (this);
+
                 IsInitialized = true;
+
+                if (String.IsNullOrEmpty (SelfHostName))
+                    SelfHostName = GetSelfHostName ();
+
+                DevicesDirectory = Path.GetFullPath (DevicesDirectory);
             }
 
         }
@@ -208,7 +214,7 @@ namespace Serial1602ShieldSystemUIController
 
         public void RunLoop ()
         {
-            Console.WriteLine ("===== Start Loop");
+            Console.WriteLine ("== Start UI Controller Loop");
             LoopNumber++;
 
             // Refresh the device list every 100 loops
@@ -229,7 +235,7 @@ namespace Serial1602ShieldSystemUIController
 
             PublishStatusToMqtt ();
 
-            Console.WriteLine ("===== End Loop");
+            Console.WriteLine ("== End UI Controller Loop");
 
             Thread.Sleep (10);
         }
@@ -255,12 +261,14 @@ namespace Serial1602ShieldSystemUIController
 
         public void EnsureConnectedToSerialDevice ()
         {
-
-            var deviceHasReset = false;
-
             if (!Client.IsOpen) {
                 ConnectToSerialDevice ();
             }
+        }
+
+        public void ResetDevices ()
+        {
+            DeviceList.Clear ();
         }
 
         public void AddNewDevices ()
@@ -275,7 +283,9 @@ namespace Serial1602ShieldSystemUIController
                 var deviceName = Path.GetFileName (deviceDir);
                 if (!DeviceList.ContainsKey (deviceName)) {
                     var deviceInfo = LoadDeviceInfo (deviceName);
-                    AddDevice (deviceInfo);
+                    var isEnabledOnDisplay = deviceInfo.DeviceHost == SelfHostName || !ShowLocalDevicesOnly;
+                    if (isEnabledOnDisplay)
+                        AddDevice (deviceInfo);
                 }
             }
 
@@ -299,6 +309,7 @@ namespace Serial1602ShieldSystemUIController
             var deviceInfoDir = Path.Combine (DevicesDirectory, deviceName);
             deviceInfo.DeviceLabel = File.ReadAllText (Path.Combine (deviceInfoDir, "label.txt")).Trim ();
             deviceInfo.DeviceGroup = File.ReadAllText (Path.Combine (deviceInfoDir, "group.txt")).Trim ();
+            deviceInfo.DeviceHost = File.ReadAllText (Path.Combine (deviceInfoDir, "host.txt")).Trim ();
 
             return deviceInfo;
         }
@@ -448,6 +459,8 @@ namespace Serial1602ShieldSystemUIController
                         RenderSubItemMqtt ((MqttMenuItemInfo)menuItemInfo);
                     if (menuItemInfo is CommandMenuItemInfo)
                         RenderSubItemCommand ((CommandMenuItemInfo)menuItemInfo);
+                    if (typeof(BaseCodeMenuItemInfo).IsAssignableFrom (menuItemInfo.GetType ()))
+                        RenderSubItemCode ((BaseCodeMenuItemInfo)menuItemInfo);
 
                     didRenderSubItem = true;
                 }
@@ -472,6 +485,7 @@ namespace Serial1602ShieldSystemUIController
 
             if (!CurrentDevice.Data.ContainsKey (valueKey))
                 CurrentDevice.Data [valueKey] = value;
+
             value = FixValueForDisplay (value, valueKey, CurrentDevice);
 
             // Send the second line to the display
@@ -502,6 +516,29 @@ namespace Serial1602ShieldSystemUIController
             SendMessageToDisplay (1, message);
         }
 
+        public void RenderSubItemCode (BaseCodeMenuItemInfo menuItemInfo)
+        {
+            var valueLabel = menuItemInfo.Label;
+            var valueKey = menuItemInfo.Key;
+
+            var value = String.Empty;
+            if (CurrentDevice.UpdatedData.ContainsKey (valueKey)) {
+                value = CurrentDevice.UpdatedData [valueKey];
+            } else if (CurrentDevice.Data.ContainsKey (valueKey)) {
+                value = CurrentDevice.Data [valueKey];
+            }
+
+            if (!CurrentDevice.Data.ContainsKey (valueKey))
+                CurrentDevice.Data [valueKey] = value;
+
+            value = FixValueForDisplay (value, valueKey, CurrentDevice);
+
+            // Send the second line to the display
+            var message = valueLabel + " " + value;
+            SendMessageToDisplay (1, message);
+        }
+
+
         public string FixValueForDisplay (string value, string key, DeviceInfo info)
         {
             var menuItemInfo = GetMenuItemInfoByIndex (CurrentDevice.DeviceGroup, SubMenuIndex);
@@ -523,6 +560,13 @@ namespace Serial1602ShieldSystemUIController
                     var optionIndex = 0;
                     Int32.TryParse (value, out optionIndex);
                     fixedValue = GetCommandOptionKeyByIndex (mqttMenuItemInfo, optionIndex);
+                }
+            } else if (menuItemInfo is DeviceFilterMenuItemInfo) {
+                var filterMenuItemInfo = (DeviceFilterMenuItemInfo)menuItemInfo;
+                if (filterMenuItemInfo.Options != null && filterMenuItemInfo.Options.Count > 0) {
+                    var optionIndex = 0;
+                    Int32.TryParse (value, out optionIndex);
+                    fixedValue = filterMenuItemInfo.Options [optionIndex];
                 }
             }
             return fixedValue;
@@ -762,6 +806,8 @@ namespace Serial1602ShieldSystemUIController
                 PublishUpdatedValue ();
             else if (menuItemInfo is CommandMenuItemInfo)
                 RunSelectedCommand ();
+            else if (typeof(BaseCodeMenuItemInfo).IsAssignableFrom (menuItemInfo.GetType ()))
+                RunSelectedCodeCommand ();
         }
 
         public void RunSelectedCommand ()
@@ -794,6 +840,40 @@ namespace Serial1602ShieldSystemUIController
             }
 
             Thread.Sleep (3000); // TODO: Make this set by a property
+        }
+
+        public void RunSelectedCodeCommand ()
+        {
+            var menuItemInfo = (BaseCodeMenuItemInfo)GetMenuItemInfoByIndex (CurrentDevice.DeviceGroup, SubMenuIndex);
+
+            var optionIndex = 0;
+            if (CurrentDevice.UpdatedData.ContainsKey (menuItemInfo.Key)) {
+                var indexString = CurrentDevice.UpdatedData [menuItemInfo.Key];
+                Int32.TryParse (indexString, out optionIndex);
+            }
+
+            menuItemInfo.Execute (optionIndex);
+
+            /*var command = GetCommandOptionValueByIndex (menuItemInfo, optionIndex);
+
+            // Reset back to the default option
+            CurrentDevice.UpdatedData [menuItemInfo.Key] = 0.ToString ();
+            CurrentDevice.Data [menuItemInfo.Key] = 0.ToString ();
+
+            SendMessageToDisplay (menuItemInfo.StartedText);
+
+            Starter.Start (command);
+
+            Thread.Sleep (3000); // TODO: Make this set by a property
+
+            if (Starter.IsError)
+                SendMessageToDisplay ("Error\noccurred.");
+            else {
+                SendMessageToDisplay (0, "Success.");
+                SendMessageToDisplay (1, "                ");
+            }
+
+            Thread.Sleep (3000); // TODO: Make this set by a property*/
         }
 
         public void CancelAlert ()

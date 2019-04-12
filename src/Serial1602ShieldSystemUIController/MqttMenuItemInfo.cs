@@ -5,7 +5,6 @@ namespace Serial1602ShieldSystemUIController
 {
     public class MqttMenuItemInfo : BaseMenuItemInfo
     {
-        public string Label;
         public string PostFix;
         public Dictionary<int, string> Options;
 

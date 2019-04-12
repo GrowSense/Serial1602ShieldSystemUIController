@@ -57,6 +57,11 @@ namespace Serial1602ShieldSystemUIController.Tests
             MockWriteLine = text;
             Output += text + Environment.NewLine;
         }
+
+        public void ClearOutput ()
+        {
+            Output = "";
+        }
     }
 }
 

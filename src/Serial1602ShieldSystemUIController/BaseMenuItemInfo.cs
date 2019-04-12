@@ -5,6 +5,7 @@ namespace Serial1602ShieldSystemUIController
     public abstract class BaseMenuItemInfo
     {
         public bool IsEditable;
+        public string Label;
         public string Key;
         public string DefaultValue;
         public int MaxValue = 100;

@@ -48,6 +48,7 @@
     <Compile Include="MqttTestHelper.cs" />
     <Compile Include="SystemMenuControllerTestFixture.cs" />
     <Compile Include="SystemMenuControllerNavigationTestFixture.cs" />
+    <Compile Include="SystemMenuControllerDeviceFilterTestFixture.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

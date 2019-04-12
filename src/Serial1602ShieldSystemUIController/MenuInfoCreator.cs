@@ -72,7 +72,8 @@ namespace Serial1602ShieldSystemUIController
 
             var uiMenuStructure = new MenuInfo ("ui");
             uiMenuStructure.Items.Add ("Status", new MqttMenuItemInfo ("StatusText", "Status", "", false, "Online"));
-            uiMenuStructure.Items.Add ("V", new MqttMenuItemInfo ("V", "Version", "", false));
+
+            uiMenuStructure.Items.Add ("Devices", new DeviceFilterMenuItemInfo (controller));
 
             var upgradeOptions = new Dictionary<string, string> ();
             upgradeOptions.Add ("No", "");
@@ -109,8 +110,9 @@ namespace Serial1602ShieldSystemUIController
             rebootOptions.Add ("Yes", "reboot now");
 #endif
             uiMenuStructure.Items.Add ("Reboot", new CommandMenuItemInfo ("Reboot", "Reboot", "", true, rebootOptions, "No", "Rebooting\ncomputer"));
-
+            uiMenuStructure.Items.Add ("V", new MqttMenuItemInfo ("V", "Version", "", false));
             controller.MenuStructure.Add ("ui", uiMenuStructure);
+
         }
     }
 }

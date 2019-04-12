@@ -50,6 +50,8 @@
     <Compile Include="ProcessStarter.cs" />
     <Compile Include="SerialClientWrapper.cs" />
     <Compile Include="SystemMenuController.cs" />
+    <Compile Include="DeviceFilterMenuItemInfo.cs" />
+    <Compile Include="BaseCodeMenuItemInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

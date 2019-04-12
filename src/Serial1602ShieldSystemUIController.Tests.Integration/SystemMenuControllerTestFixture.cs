@@ -25,7 +25,7 @@ namespace Serial1602ShieldSystemUIController.Tests.Integration
             controller.Client = mockClient;
             controller.MqttClient = mockMqttClient;
 
-            CreateExampleDevice (devicesDirectory, "device1", "Device1", "Group");
+            CreateExampleDevice (devicesDirectory, "device1", "Device1", "Group", "host");
 
             controller.RunLoop ();
 
@@ -147,16 +147,6 @@ namespace Serial1602ShieldSystemUIController.Tests.Integration
             controller.RemoveDevice (deviceInfo3);
 
             Assert.AreEqual (1, controller.MenuIndex, "Changed the menu index when it shouldn't have.");
-        }
-
-        public void CreateExampleDevice (string devicesDir, string name, string label, string group)
-        {
-            var deviceDir = Path.Combine (devicesDir, name);
-            Directory.CreateDirectory (deviceDir);
-
-            File.WriteAllText (Path.Combine (deviceDir, "name.txt"), name);
-            File.WriteAllText (Path.Combine (deviceDir, "label.txt"), label);
-            File.WriteAllText (Path.Combine (deviceDir, "group.txt"), group);
         }
 
     }

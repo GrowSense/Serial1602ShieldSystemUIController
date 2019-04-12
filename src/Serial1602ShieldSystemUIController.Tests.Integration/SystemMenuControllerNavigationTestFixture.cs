@@ -24,9 +24,9 @@ namespace Serial1602ShieldSystemUIController.Tests.Integration
             controller.Client = mockClient;
             controller.MqttClient = mockMqttClient;
 
-            CreateExampleDevice (devicesDirectory, "irrigator1", "Irrigator1", "irrigator");
-            CreateExampleDevice (devicesDirectory, "illuminator1", "Illuminator1", "illuminator");
-            CreateExampleDevice (devicesDirectory, "ventilator1", "Ventilator1", "ventilator");
+            CreateExampleDevice (devicesDirectory, "irrigator1", "Irrigator1", "irrigator", "host");
+            CreateExampleDevice (devicesDirectory, "illuminator1", "Illuminator1", "illuminator", "host");
+            CreateExampleDevice (devicesDirectory, "ventilator1", "Ventilator1", "ventilator", "host");
 
             // Run a loop to detect all the devices
             controller.RunLoop ();
@@ -67,9 +67,9 @@ namespace Serial1602ShieldSystemUIController.Tests.Integration
             controller.Client = mockClient;
             controller.MqttClient = mockMqttClient;
 
-            CreateExampleDevice (devicesDirectory, "irrigator1", "Irrigator1", "irrigator");
-            CreateExampleDevice (devicesDirectory, "illuminator1", "Illuminator1", "illuminator");
-            CreateExampleDevice (devicesDirectory, "ventilator1", "Ventilator1", "ventilator");
+            CreateExampleDevice (devicesDirectory, "irrigator1", "Irrigator1", "irrigator", "host");
+            CreateExampleDevice (devicesDirectory, "illuminator1", "Illuminator1", "illuminator", "host");
+            CreateExampleDevice (devicesDirectory, "ventilator1", "Ventilator1", "ventilator", "host");
 
             // Run a loop to detect all the devices
             controller.RunLoop ();
@@ -112,9 +112,9 @@ namespace Serial1602ShieldSystemUIController.Tests.Integration
             controller.Client = mockSerialClient;
             controller.MqttClient = mockMqttClient;
 
-            CreateExampleDevice (devicesDirectory, "irrigator1", "Irrigator1", "irrigator");
-            CreateExampleDevice (devicesDirectory, "illuminator1", "Illuminator1", "illuminator");
-            CreateExampleDevice (devicesDirectory, "ventilator1", "Ventilator1", "ventilator");
+            CreateExampleDevice (devicesDirectory, "irrigator1", "Irrigator1", "irrigator", "host");
+            CreateExampleDevice (devicesDirectory, "illuminator1", "Illuminator1", "illuminator", "host");
+            CreateExampleDevice (devicesDirectory, "ventilator1", "Ventilator1", "ventilator", "host");
 
             // Initialize the controller
             controller.Initialize ();
@@ -155,9 +155,9 @@ namespace Serial1602ShieldSystemUIController.Tests.Integration
             controller.Client = mockSerialClient;
             controller.MqttClient = mockMqttClient;
 
-            CreateExampleDevice (devicesDirectory, "irrigator1", "Irrigator1", "irrigator");
-            CreateExampleDevice (devicesDirectory, "illuminator1", "Illuminator1", "illuminator");
-            CreateExampleDevice (devicesDirectory, "ventilator1", "Ventilator1", "ventilator");
+            CreateExampleDevice (devicesDirectory, "irrigator1", "Irrigator1", "irrigator", "host");
+            CreateExampleDevice (devicesDirectory, "illuminator1", "Illuminator1", "illuminator", "host");
+            CreateExampleDevice (devicesDirectory, "ventilator1", "Ventilator1", "ventilator", "host");
 
             // Initialize the controller
             controller.Initialize ();
@@ -216,9 +216,9 @@ namespace Serial1602ShieldSystemUIController.Tests.Integration
             controller.Client = mockSerialClient;
             controller.MqttClient = mockMqttClient;
 
-            CreateExampleDevice (devicesDirectory, "irrigator1", "Irrigator1", "irrigator");
-            CreateExampleDevice (devicesDirectory, "illuminator1", "Illuminator1", "illuminator");
-            CreateExampleDevice (devicesDirectory, "ventilator1", "Ventilator1", "ventilator");
+            CreateExampleDevice (devicesDirectory, "irrigator1", "Irrigator1", "irrigator", "host");
+            CreateExampleDevice (devicesDirectory, "illuminator1", "Illuminator1", "illuminator", "host");
+            CreateExampleDevice (devicesDirectory, "ventilator1", "Ventilator1", "ventilator", "host");
 
             // Initialize the controller
             controller.Initialize ();
@@ -258,16 +258,6 @@ namespace Serial1602ShieldSystemUIController.Tests.Integration
 
             Assert.AreEqual (totalSubItems - 1, controller.SubMenuIndex, "The sub menu index didn't go back to 0 as it should have.");
 
-        }
-
-        public void CreateExampleDevice (string devicesDir, string name, string label, string group)
-        {
-            var deviceDir = Path.Combine (devicesDir, name);
-            Directory.CreateDirectory (deviceDir);
-
-            File.WriteAllText (Path.Combine (deviceDir, "name.txt"), name);
-            File.WriteAllText (Path.Combine (deviceDir, "label.txt"), label);
-            File.WriteAllText (Path.Combine (deviceDir, "group.txt"), group);
         }
 
     }
