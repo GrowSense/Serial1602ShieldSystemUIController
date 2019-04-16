@@ -49,6 +49,7 @@
     <Compile Include="SystemMenuControllerTestFixture.cs" />
     <Compile Include="SystemMenuControllerNavigationTestFixture.cs" />
     <Compile Include="SystemMenuControllerDeviceFilterTestFixture.cs" />
+    <Compile Include="SystemMenuControllerRemoveDevice.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

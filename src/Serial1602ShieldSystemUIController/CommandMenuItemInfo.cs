@@ -3,14 +3,14 @@ using System.Collections.Generic;
 
 namespace Serial1602ShieldSystemUIController
 {
-    public class CommandMenuItemInfo : BaseMenuItemInfo
+    public class BashCommandMenuItemInfo : BaseMenuItemInfo
     {
         public string PostFix;
-        public Dictionary<string, string> Options;
+        public Dictionary<string, string> Options = new Dictionary<string, string> ();
 
         public string StartedText = "";
 
-        public CommandMenuItemInfo (string key, string label, string postFix, bool isEditable)
+        public BashCommandMenuItemInfo (string key, string label, string postFix, bool isEditable)
         {
             Key = key;
             Label = label;
@@ -18,7 +18,7 @@ namespace Serial1602ShieldSystemUIController
             IsEditable = isEditable;
         }
 
-        public CommandMenuItemInfo (string key, string label, string postFix, bool isEditable, int minValue, int maxValue)
+        public BashCommandMenuItemInfo (string key, string label, string postFix, bool isEditable, int minValue, int maxValue)
         {
             Key = key;
             Label = label;
@@ -28,7 +28,7 @@ namespace Serial1602ShieldSystemUIController
             MaxValue = maxValue;
         }
 
-        public CommandMenuItemInfo (string key, string label, string postFix, bool isEditable, Dictionary<string, string> options)
+        public BashCommandMenuItemInfo (string key, string label, string postFix, bool isEditable, Dictionary<string, string> options)
         {
             Key = key;
             Label = label;
@@ -40,7 +40,7 @@ namespace Serial1602ShieldSystemUIController
             StartedText = label + " started";
         }
 
-        public CommandMenuItemInfo (string key, string label, string postFix, bool isEditable, Dictionary<string, string> options, string defaultValue, string startedText)
+        public BashCommandMenuItemInfo (string key, string label, string postFix, bool isEditable, Dictionary<string, string> options, string defaultValue, string startedText)
         {
             Key = key;
             Label = label;

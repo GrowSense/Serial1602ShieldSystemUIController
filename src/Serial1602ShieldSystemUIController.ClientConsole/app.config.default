@@ -12,5 +12,6 @@
         <add key="EmailAddress" value="user@example.com" />
         <add key="WaitTimeBeforeRetry" value="120" />
         <add key="DevicesDirectory" value="../../devices" />
+        <add key="TargetDirectory" value="../.." />
     </appSettings>
 </configuration>

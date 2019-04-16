@@ -24,6 +24,7 @@ namespace Serial1602ShieldSystemUIController
             irrigatorMenuStructure.Items.Add ("R", new MqttMenuItemInfo ("R", "Raw", "", false));
             irrigatorMenuStructure.Items.Add ("D", new MqttMenuItemInfo ("D", "Dry", "", true, 0, 1024));
             irrigatorMenuStructure.Items.Add ("W", new MqttMenuItemInfo ("W", "Wet", "", true, 0, 1024));
+            irrigatorMenuStructure.Items.Add ("Remove", new RemoveDeviceMenuItemInfo ());
             controller.MenuStructure.Add ("irrigator", irrigatorMenuStructure);
 
             var monitorMenuStructure = new MenuInfo ("monitor");
@@ -32,6 +33,7 @@ namespace Serial1602ShieldSystemUIController
             monitorMenuStructure.Items.Add ("R", new MqttMenuItemInfo ("R", "Raw", "", false));
             monitorMenuStructure.Items.Add ("D", new MqttMenuItemInfo ("D", "Dry", "", true, 0, 1024));
             monitorMenuStructure.Items.Add ("W", new MqttMenuItemInfo ("W", "Wet", "", true, 0, 1024));
+            monitorMenuStructure.Items.Add ("Remove", new RemoveDeviceMenuItemInfo ());
             controller.MenuStructure.Add ("monitor", monitorMenuStructure);
 
             var ventilatorMenuStructure = new MenuInfo ("ventilator");
@@ -46,6 +48,7 @@ namespace Serial1602ShieldSystemUIController
             ventilatorMenuStructure.Items.Add ("U", new MqttMenuItemInfo ("U", "MaxTemp", "c", true));
             ventilatorMenuStructure.Items.Add ("G", new MqttMenuItemInfo ("G", "MinHum", "%", true));
             ventilatorMenuStructure.Items.Add ("J", new MqttMenuItemInfo ("J", "MaxHum", "%", true));
+            ventilatorMenuStructure.Items.Add ("Remove", new RemoveDeviceMenuItemInfo ());
             controller.MenuStructure.Add ("ventilator", ventilatorMenuStructure);
 
             var illuminatorMenuStructure = new MenuInfo ("illuminator");
@@ -68,6 +71,7 @@ namespace Serial1602ShieldSystemUIController
             illuminatorMenuStructure.Items.Add ("F", new MqttMenuItemInfo ("F", "Start Minute", "", true, 0, 59));
             illuminatorMenuStructure.Items.Add ("G", new MqttMenuItemInfo ("G", "Stop Hour", "", true, 0, 23));
             illuminatorMenuStructure.Items.Add ("H", new MqttMenuItemInfo ("H", "Stop Minute", "", true, 0, 59));
+            illuminatorMenuStructure.Items.Add ("Remove", new RemoveDeviceMenuItemInfo ());
             controller.MenuStructure.Add ("illuminator", illuminatorMenuStructure);
 
             var uiMenuStructure = new MenuInfo ("ui");
@@ -82,7 +86,7 @@ namespace Serial1602ShieldSystemUIController
 #else
             upgradeOptions.Add ("Yes", "sh upgrade.sh");
 #endif
-            uiMenuStructure.Items.Add ("Upgrade", new CommandMenuItemInfo ("Upgrade", "Upgrade", "", true, upgradeOptions, "No", "Upgrading"));
+            uiMenuStructure.Items.Add ("Upgrade", new BashCommandMenuItemInfo ("Upgrade", "Upgrade", "", true, upgradeOptions, "No", "Upgrading"));
 
             var reinstallOptions = new Dictionary<string, string> ();
             reinstallOptions.Add ("No", "");
@@ -91,7 +95,7 @@ namespace Serial1602ShieldSystemUIController
 #else
             reinstallOptions.Add ("Yes", "cd scripts-web && sh reinstall-plug-and-play-from-web.sh");
 #endif
-            uiMenuStructure.Items.Add ("Reinstall", new CommandMenuItemInfo ("Reinstall", "Reinstall", "", true, reinstallOptions, "No", "Reinstalling"));
+            uiMenuStructure.Items.Add ("Reinstall", new BashCommandMenuItemInfo ("Reinstall", "Reinstall", "", true, reinstallOptions, "No", "Reinstalling"));
 
             var clearDevicesOptions = new Dictionary<string, string> ();
             clearDevicesOptions.Add ("No", "");
@@ -100,7 +104,7 @@ namespace Serial1602ShieldSystemUIController
 #else
             clearDevicesOptions.Add ("Yes", "sh clean-devices.sh");
 #endif
-            uiMenuStructure.Items.Add ("Clean", new CommandMenuItemInfo ("Clean", "Clean", "", true, clearDevicesOptions, "No", "Cleaning\ndevices"));
+            uiMenuStructure.Items.Add ("Clean", new BashCommandMenuItemInfo ("Clean", "Clean", "", true, clearDevicesOptions, "No", "Cleaning\ndevices"));
 
             var rebootOptions = new Dictionary<string, string> ();
             rebootOptions.Add ("No", "");
@@ -109,8 +113,9 @@ namespace Serial1602ShieldSystemUIController
 #else
             rebootOptions.Add ("Yes", "reboot now");
 #endif
-            uiMenuStructure.Items.Add ("Reboot", new CommandMenuItemInfo ("Reboot", "Reboot", "", true, rebootOptions, "No", "Rebooting\ncomputer"));
+            uiMenuStructure.Items.Add ("Reboot", new BashCommandMenuItemInfo ("Reboot", "Reboot", "", true, rebootOptions, "No", "Rebooting\ncomputer"));
             uiMenuStructure.Items.Add ("V", new MqttMenuItemInfo ("V", "Version", "", false));
+            uiMenuStructure.Items.Add ("Remove", new RemoveDeviceMenuItemInfo ());
             controller.MenuStructure.Add ("ui", uiMenuStructure);
 
         }

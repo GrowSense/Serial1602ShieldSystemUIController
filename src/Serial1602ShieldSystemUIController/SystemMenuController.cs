@@ -23,6 +23,7 @@ namespace Serial1602ShieldSystemUIController
         public Dictionary<string, DeviceInfo> DeviceList = new Dictionary<string, DeviceInfo> ();
 
         public string DevicesDirectory = String.Empty;
+        public string TargetDirectory = String.Empty;
 
         public int MenuIndex = 0;
         public int SubMenuIndex = 0;
@@ -77,6 +78,7 @@ namespace Serial1602ShieldSystemUIController
         public string SelfHostName = "";
 
         public bool ShowLocalDevicesOnly = false;
+
 
         public SystemMenuController ()
         {
@@ -217,13 +219,13 @@ namespace Serial1602ShieldSystemUIController
             Console.WriteLine ("== Start UI Controller Loop");
             LoopNumber++;
 
-            // Refresh the device list every 100 loops
-            //if (LoopNumber % 10 == 0)
+            RemoveLostDevices ();
+
             AddNewDevices ();
 
-            EnsureConnectedToSerialDevice ();
-
             RenderDisplayOnDevice ();
+
+            EnsureConnectedToSerialDevice ();
 
             if (Client.HasData) {
                 var line = Client.ReadLine ();
@@ -231,13 +233,11 @@ namespace Serial1602ShieldSystemUIController
                 ProcessLineFromDevice (line.Trim ());
             }
 
-            RemoveLostDevices ();
-
             PublishStatusToMqtt ();
 
             Console.WriteLine ("== End UI Controller Loop");
 
-            Thread.Sleep (10);
+            Thread.Sleep (5);
         }
 
         public string[] GetSubscribeTopics ()
@@ -350,8 +350,10 @@ namespace Serial1602ShieldSystemUIController
             }
 
             // If the menu index is greater than the index of the removed device then decrement the index
-            if (MenuIndex > index)
+            if (MenuIndex > index) {
                 MenuIndex--;
+                SubMenuIndex = 0;
+            }
         }
 
         public void ProcessLineFromDevice (string line)
@@ -457,8 +459,8 @@ namespace Serial1602ShieldSystemUIController
                 if (menuItemInfo != null) {
                     if (menuItemInfo is MqttMenuItemInfo)
                         RenderSubItemMqtt ((MqttMenuItemInfo)menuItemInfo);
-                    if (menuItemInfo is CommandMenuItemInfo)
-                        RenderSubItemCommand ((CommandMenuItemInfo)menuItemInfo);
+                    if (menuItemInfo is BashCommandMenuItemInfo)
+                        RenderSubItemCommand ((BashCommandMenuItemInfo)menuItemInfo);
                     if (typeof(BaseCodeMenuItemInfo).IsAssignableFrom (menuItemInfo.GetType ()))
                         RenderSubItemCode ((BaseCodeMenuItemInfo)menuItemInfo);
 
@@ -494,7 +496,7 @@ namespace Serial1602ShieldSystemUIController
 
         }
 
-        public void RenderSubItemCommand (CommandMenuItemInfo menuItemInfo)
+        public void RenderSubItemCommand (BashCommandMenuItemInfo menuItemInfo)
         {
             var valueLabel = menuItemInfo.Label;
             var valueKey = menuItemInfo.Key;
@@ -554,8 +556,8 @@ namespace Serial1602ShieldSystemUIController
                     Int32.TryParse (value, out optionIndex);
                     fixedValue = mqttMenuItemInfo.Options [optionIndex];
                 }
-            } else if (menuItemInfo is CommandMenuItemInfo) {
-                var mqttMenuItemInfo = (CommandMenuItemInfo)menuItemInfo;
+            } else if (menuItemInfo is BashCommandMenuItemInfo) {
+                var mqttMenuItemInfo = (BashCommandMenuItemInfo)menuItemInfo;
                 if (mqttMenuItemInfo.Options != null && mqttMenuItemInfo.Options.Count > 0) {
                     var optionIndex = 0;
                     Int32.TryParse (value, out optionIndex);
@@ -572,7 +574,7 @@ namespace Serial1602ShieldSystemUIController
             return fixedValue;
         }
 
-        public string GetCommandOptionKeyByIndex (CommandMenuItemInfo menuItemInfo, int index)
+        public string GetCommandOptionKeyByIndex (BashCommandMenuItemInfo menuItemInfo, int index)
         {
             var output = "";
             var i = 0;
@@ -586,7 +588,7 @@ namespace Serial1602ShieldSystemUIController
             return output;
         }
 
-        public string GetCommandOptionValueByIndex (CommandMenuItemInfo menuItemInfo, int index)
+        public string GetCommandOptionValueByIndex (BashCommandMenuItemInfo menuItemInfo, int index)
         {
             var i = 0;
             foreach (var option in menuItemInfo.Options) {
@@ -804,15 +806,15 @@ namespace Serial1602ShieldSystemUIController
             var menuItemInfo = GetMenuItemInfoByIndex (CurrentDevice.DeviceGroup, SubMenuIndex);
             if (menuItemInfo is MqttMenuItemInfo)
                 PublishUpdatedValue ();
-            else if (menuItemInfo is CommandMenuItemInfo)
-                RunSelectedCommand ();
+            else if (typeof(BashCommandMenuItemInfo).IsAssignableFrom (menuItemInfo.GetType ()))
+                RunSelectedBashCommand ();
             else if (typeof(BaseCodeMenuItemInfo).IsAssignableFrom (menuItemInfo.GetType ()))
                 RunSelectedCodeCommand ();
         }
 
-        public void RunSelectedCommand ()
+        public void RunSelectedBashCommand ()
         {
-            var menuItemInfo = (CommandMenuItemInfo)GetMenuItemInfoByIndex (CurrentDevice.DeviceGroup, SubMenuIndex);
+            var menuItemInfo = (BashCommandMenuItemInfo)GetMenuItemInfoByIndex (CurrentDevice.DeviceGroup, SubMenuIndex);
 
             var optionIndex = 0;
             if (CurrentDevice.UpdatedData.ContainsKey (menuItemInfo.Key)) {
@@ -828,18 +830,30 @@ namespace Serial1602ShieldSystemUIController
 
             SendMessageToDisplay (menuItemInfo.StartedText);
 
+            command = FixCommand (command);
+
             Starter.Start (command);
 
-            Thread.Sleep (3000); // TODO: Make this set by a property
-
-            if (Starter.IsError)
+            // TODO: Clean up. Alerts aren't working here.
+            if (Starter.IsError) {
+                //Alerts.Enqueue ("0|Error\r\n1|occurred");
                 SendMessageToDisplay ("Error\noccurred.");
-            else {
-                SendMessageToDisplay (0, "Success.");
+            } else {
+                //Alerts.Enqueue ("0|Successful\r\n1|                ");
+                SendMessageToDisplay (0, "Successful");
                 SendMessageToDisplay (1, "                ");
             }
 
-            Thread.Sleep (3000); // TODO: Make this set by a property
+            Thread.Sleep (AlertDisplayDuration * 1000);
+        }
+
+        public string FixCommand (string originalCommand)
+        {
+            var fixedCommand = originalCommand;
+            fixedCommand = fixedCommand.Replace ("{DEVICE_NAME}", CurrentDevice.DeviceName);
+            if (!String.IsNullOrEmpty (TargetDirectory))
+                fixedCommand = "cd " + TargetDirectory + " && " + fixedCommand;
+            return fixedCommand;
         }
 
         public void RunSelectedCodeCommand ()
@@ -853,32 +867,12 @@ namespace Serial1602ShieldSystemUIController
             }
 
             menuItemInfo.Execute (optionIndex);
-
-            /*var command = GetCommandOptionValueByIndex (menuItemInfo, optionIndex);
-
-            // Reset back to the default option
-            CurrentDevice.UpdatedData [menuItemInfo.Key] = 0.ToString ();
-            CurrentDevice.Data [menuItemInfo.Key] = 0.ToString ();
-
-            SendMessageToDisplay (menuItemInfo.StartedText);
-
-            Starter.Start (command);
-
-            Thread.Sleep (3000); // TODO: Make this set by a property
-
-            if (Starter.IsError)
-                SendMessageToDisplay ("Error\noccurred.");
-            else {
-                SendMessageToDisplay (0, "Success.");
-                SendMessageToDisplay (1, "                ");
-            }
-
-            Thread.Sleep (3000); // TODO: Make this set by a property*/
         }
 
         public void CancelAlert ()
         {
             Alerts.Dequeue ();
+            AlertDisplayStartTime = DateTime.MinValue;
             HasChanged = true;
         }
 
@@ -1056,31 +1050,33 @@ namespace Serial1602ShieldSystemUIController
 
             var menuItemInfo = GetMenuItemInfoByIndex (CurrentDevice.DeviceGroup, SubMenuIndex);
 
-            var originalValue = menuItemInfo.DefaultValue;
+            if (menuItemInfo != null) {
+                var originalValue = menuItemInfo.DefaultValue;
                             
-            var deviceInfo = DeviceList [deviceName];
+                var deviceInfo = DeviceList [deviceName];
 
-            if (deviceInfo.Data.ContainsKey (subTopic))
-                originalValue = deviceInfo.Data [subTopic];
+                if (deviceInfo.Data.ContainsKey (subTopic))
+                    originalValue = deviceInfo.Data [subTopic];
 
-            deviceInfo.Data [subTopic] = message;
+                deviceInfo.Data [subTopic] = message;
 
-            var deviceLabel = DeviceList [deviceName].DeviceLabel;
+                var deviceLabel = DeviceList [deviceName].DeviceLabel;
 
-            if (subTopic == "StatusMessage") {
-                if (message != "Online") {
-                    Console.WriteLine ("Alert on device: " + deviceLabel);
-                    Console.WriteLine ("  " + message);
-                    Alerts.Enqueue ("0|" + deviceLabel + "\r\n1|" + message);
+                if (subTopic == "StatusMessage") {
+                    if (message != "Online") {
+                        Console.WriteLine ("Alert on device: " + deviceLabel);
+                        Console.WriteLine ("  " + message);
+                        Alerts.Enqueue ("0|" + deviceLabel + "\r\n1|" + message);
+                    }
                 }
+
+                var key = menuItemInfo.Key;
+
+                var isCurrentlyViewing = (key == subTopic);
+                var hasChanged = originalValue != message;
+                if (isCurrentlyViewing && hasChanged)
+                    HasChanged = true;
             }
-
-            var key = menuItemInfo.Key;
-
-            var isCurrentlyViewing = (key == subTopic);
-            var hasChanged = originalValue != message;
-            if (isCurrentlyViewing && hasChanged)
-                HasChanged = true;
         }
 
         public string GetSelfHostName ()

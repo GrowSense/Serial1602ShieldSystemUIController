@@ -49,6 +49,7 @@ namespace Serial1602ShieldSystemUIController.ClientConsole
             controller.SmtpServer = GetConfigValue (arguments, "SmtpServer");
 
             controller.DevicesDirectory = GetConfigValue (arguments, "DevicesDirectory");
+            controller.TargetDirectory = GetConfigValue (arguments, "TargetDirectory");
 
             IsVerbose = arguments.Contains ("v");
             controller.IsVerbose = IsVerbose;

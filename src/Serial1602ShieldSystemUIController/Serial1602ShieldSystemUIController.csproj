@@ -52,6 +52,7 @@
     <Compile Include="SystemMenuController.cs" />
     <Compile Include="DeviceFilterMenuItemInfo.cs" />
     <Compile Include="BaseCodeMenuItemInfo.cs" />
+    <Compile Include="RemoveDeviceMenuItemInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

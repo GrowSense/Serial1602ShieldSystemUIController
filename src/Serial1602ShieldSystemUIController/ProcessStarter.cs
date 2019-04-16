@@ -96,10 +96,12 @@ namespace Serial1602ShieldSystemUIController
                     throw new ArgumentException ("Cannot find the file '" + Path.GetFullPath (command) + "'.");
             }
 
+            var fullCommand = command + " " + arguments;
+
             // Create the process start information
             ProcessStartInfo info = new ProcessStartInfo (
-                                        command,
-                                        arguments
+                                        "/bin/bash",
+                                        " -c '" + fullCommand + "'"
                                     );
 
             // Configure the process
