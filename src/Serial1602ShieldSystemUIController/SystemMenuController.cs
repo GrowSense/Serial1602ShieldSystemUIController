@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using uPLibrary.Networking.M2Mqtt.Messages;
 using uPLibrary.Networking.M2Mqtt;
 using System.Text;
+using uPLibrary.Networking.M2Mqtt.Exceptions;
 
 namespace Serial1602ShieldSystemUIController
 {
@@ -202,7 +203,17 @@ namespace Serial1602ShieldSystemUIController
             var clientId = Guid.NewGuid ().ToString ();
 
             MqttClient.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
-            MqttClient.Connect (clientId, MqttUsername, MqttPassword);
+
+            try {
+                MqttClient.Connect (clientId, MqttUsername, MqttPassword);
+            } catch (MqttConnectionException ex) {
+                Console.WriteLine ("Error: Failed to connect to MQTT broker");
+                Console.WriteLine ("Host: " + MqttHost);
+                Console.WriteLine ("Port: " + MqttPort);
+                Console.WriteLine ("Username: " + MqttUsername);
+
+                throw ex;
+            }
 
 
             var subscribeTopics = new string[] {
