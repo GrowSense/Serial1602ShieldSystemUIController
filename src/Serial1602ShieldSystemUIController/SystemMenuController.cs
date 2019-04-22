@@ -80,6 +80,7 @@ namespace Serial1602ShieldSystemUIController
 
         public bool ShowLocalDevicesOnly = false;
 
+        public bool IsConnected = false;
 
         public SystemMenuController ()
         {
@@ -198,21 +199,29 @@ namespace Serial1602ShieldSystemUIController
 
         public void SetupMQTT ()
         {
-            MqttClient = new MqttClientWrapper (MqttHost, MqttPort);
+            while (!IsConnected) {
+                try {
+                    MqttClient = new MqttClientWrapper (MqttHost, MqttPort);
 
-            var clientId = Guid.NewGuid ().ToString ();
+                    var clientId = Guid.NewGuid ().ToString ();
 
-            MqttClient.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
+                    MqttClient.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
 
-            try {
-                MqttClient.Connect (clientId, MqttUsername, MqttPassword);
-            } catch (MqttConnectionException ex) {
-                Console.WriteLine ("Error: Failed to connect to MQTT broker");
-                Console.WriteLine ("Host: " + MqttHost);
-                Console.WriteLine ("Port: " + MqttPort);
-                Console.WriteLine ("Username: " + MqttUsername);
+                    MqttClient.Connect (clientId, MqttUsername, MqttPassword);
 
-                throw ex;
+                    IsConnected = true;
+                } catch (Exception ex) {
+                    Console.WriteLine ("Error: Failed to connect to MQTT broker");
+                    Console.WriteLine ("Host: " + MqttHost);
+                    Console.WriteLine ("Port: " + MqttPort);
+                    Console.WriteLine ("Username: " + MqttUsername);
+
+                    Console.WriteLine (ex.ToString ());
+
+                    Console.WriteLine ("Retrying in 10 seconds...");
+
+                    Thread.Sleep (10 * 1000);
+                }
             }
 
 
