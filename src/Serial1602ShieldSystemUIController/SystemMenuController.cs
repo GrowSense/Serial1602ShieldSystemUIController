@@ -257,7 +257,7 @@ namespace Serial1602ShieldSystemUIController
 
             Console.WriteLine ("== End UI Controller Loop");
 
-            Thread.Sleep (5);
+            Thread.Sleep (500);
         }
 
         public string[] GetSubscribeTopics ()
