@@ -303,9 +303,11 @@ namespace Serial1602ShieldSystemUIController
                 var deviceName = Path.GetFileName (deviceDir);
                 if (!DeviceList.ContainsKey (deviceName)) {
                     var deviceInfo = LoadDeviceInfo (deviceName);
-                    var isEnabledOnDisplay = deviceInfo.DeviceHost == SelfHostName || !ShowLocalDevicesOnly;
-                    if (deviceInfo != null && isEnabledOnDisplay)
-                        AddDevice (deviceInfo);
+                    if (deviceInfo != null) {
+                        var isEnabledOnDisplay = deviceInfo.DeviceHost == SelfHostName || !ShowLocalDevicesOnly;
+                        if (isEnabledOnDisplay)
+                            AddDevice (deviceInfo);
+                    }
                 }
             }
 
@@ -328,17 +330,17 @@ namespace Serial1602ShieldSystemUIController
             var deviceInfo = new DeviceInfo (deviceName);
             var deviceInfoDir = Path.Combine (DevicesDirectory, deviceName);
             
-            var labelFilePath = Path.Combine(deviceInfoDir, "label.txt");
-            if (!File.Exists(labelFilePath))
-            	return null;
+            var labelFilePath = Path.Combine (deviceInfoDir, "label.txt");
+            if (!File.Exists (labelFilePath))
+                return null;
 
-            var groupFilePath = Path.Combine(deviceInfoDir, "group.txt");
-            if (!File.Exists(groupFilePath))
-            	return null;
+            var groupFilePath = Path.Combine (deviceInfoDir, "group.txt");
+            if (!File.Exists (groupFilePath))
+                return null;
 
-            var hostFilePath = Path.Combine(deviceInfoDir, "host.txt");
-            if (!File.Exists(hostFilePath))
-            	return null;
+            var hostFilePath = Path.Combine (deviceInfoDir, "host.txt");
+            if (!File.Exists (hostFilePath))
+                return null;
 
             deviceInfo.DeviceLabel = File.ReadAllText (Path.Combine (deviceInfoDir, "label.txt")).Trim ();
             deviceInfo.DeviceGroup = File.ReadAllText (Path.Combine (deviceInfoDir, "group.txt")).Trim ();
