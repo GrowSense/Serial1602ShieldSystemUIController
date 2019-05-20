@@ -236,7 +236,9 @@ namespace Serial1602ShieldSystemUIController
 
         public void RunLoop ()
         {
-            Console.WriteLine ("== Start UI Controller Loop");
+            if (IsVerbose)
+                Console.WriteLine ("== Start UI Controller Loop");
+
             LoopNumber++;
 
             RemoveLostDevices ();
@@ -255,7 +257,8 @@ namespace Serial1602ShieldSystemUIController
 
             PublishStatusToMqtt ();
 
-            Console.WriteLine ("== End UI Controller Loop");
+            if (IsVerbose)
+                Console.WriteLine ("== End UI Controller Loop");
 
             Thread.Sleep (500);
         }
