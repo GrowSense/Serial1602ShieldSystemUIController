@@ -19,7 +19,7 @@ namespace Serial1602ShieldSystemUIController
 
         public SerialClientWrapper Client = null;
 
-        public int WaitTimeBeforeRetry = 120;
+        public int WaitTimeBeforeRetry = 3;
 
         public Dictionary<string, DeviceInfo> DeviceList = new Dictionary<string, DeviceInfo> ();
 
@@ -125,11 +125,11 @@ namespace Serial1602ShieldSystemUIController
                     Console.WriteLine ("An error occurred:");
                     Console.WriteLine (ex.ToString ());
                     Console.WriteLine ();
-                    Console.WriteLine ("Waiting for 30 seconds then retrying");
+                    Console.WriteLine ("Waiting for " + WaitTimeBeforeRetry + " seconds then retrying");
 
                     SendErrorEmail (ex, DeviceName, SmtpServer, EmailAddress);
 
-                    Thread.Sleep (30 * 1000);
+                    Thread.Sleep (WaitTimeBeforeRetry * 1000);
 
                     Run ();
                 }
@@ -218,9 +218,9 @@ namespace Serial1602ShieldSystemUIController
 
                     Console.WriteLine (ex.ToString ());
 
-                    Console.WriteLine ("Retrying in 10 seconds...");
+                    Console.WriteLine ("Retrying in " + WaitTimeBeforeRetry + " seconds...");
 
-                    Thread.Sleep (10 * 1000);
+                    Thread.Sleep (WaitTimeBeforeRetry * 1000);
                 }
             }
 
@@ -259,8 +259,6 @@ namespace Serial1602ShieldSystemUIController
 
             if (IsVerbose)
                 Console.WriteLine ("== End UI Controller Loop");
-
-            Thread.Sleep (500);
         }
 
         public string[] GetSubscribeTopics ()
