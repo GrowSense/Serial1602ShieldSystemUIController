@@ -63,7 +63,7 @@ namespace Serial1602ShieldSystemUIController.Tests.Integration
             mockSerialClient.ClearOutput ();
 
             Console.WriteLine ("Pressing down button to change to yes...");
-            controller.MenuDown ();
+            controller.PressMenuDown ();
 
             Console.WriteLine ("Running a loop to update display...");
             controller.RunLoop ();
@@ -81,7 +81,7 @@ namespace Serial1602ShieldSystemUIController.Tests.Integration
             File.WriteAllText (Path.Combine (controller.TargetDirectory, removeScriptName), removeScriptContent);
 
             Console.WriteLine ("Pressing select button to execute the removal...");
-            controller.MenuSelect ();
+            controller.PressMenuSelect ();
 
             Console.WriteLine ("Device output:");
             Console.WriteLine (mockSerialClient.Output);
@@ -109,54 +109,6 @@ namespace Serial1602ShieldSystemUIController.Tests.Integration
             Console.WriteLine ("Device output:");
             Console.WriteLine (mockSerialClient.Output);
             mockSerialClient.ClearOutput ();
-
-            /*Console.WriteLine ("Pressing right button to move to next option...");
-            controller.MenuRight ();
-
-            Console.WriteLine ("Running a loop to update display...");
-            controller.RunLoop ();
-
-            Assert.IsTrue (mockClient.Output.Contains ("Devices all"), "Output is invalid.");
-
-            Console.WriteLine ("Device output:");
-            Console.WriteLine (mockClient.Output);
-            mockClient.ClearOutput ();
-
-            Console.WriteLine ("Pressing up button to change to local devices only...");
-            controller.MenuUp ();
-
-            Console.WriteLine ("Running a loop to update display...");
-            controller.RunLoop ();
-
-            Assert.IsTrue (mockClient.Output.Contains ("Devices local"), "Output is invalid.");
-
-            Console.WriteLine ("Device output:");
-            Console.WriteLine (mockClient.Output);
-            mockClient.ClearOutput ();
-
-            Console.WriteLine ("Pressing select button to submit the change...");
-            controller.MenuSelect ();
-
-            Console.WriteLine ("Running a loop to update display...");
-            controller.RunLoop ();
-
-            Console.WriteLine ("Device output:");
-            Console.WriteLine (mockClient.Output);
-            mockClient.ClearOutput ();
-
-            Assert.IsTrue (controller.ShowLocalDevicesOnly, "The ShowLocalDevicesOnly property wasn't updated.");
-
-            Assert.AreEqual (2, controller.DeviceList.Count, "The device list count is incorrect. The remote device shouldn't have been loaded.");
-
-            Assert.AreEqual (0, controller.MenuIndex, "The menu index should have been reset.");
-            Assert.IsFalse (controller.DeviceIsSelected, "The device should have been deselected after reload.");
-
-            Console.WriteLine ("Running a loop to update display...");
-            controller.RunLoop ();
-
-            Console.WriteLine ("Device output:");
-            Console.WriteLine (mockClient.Output);
-            mockClient.ClearOutput ();*/
         }
     }
 }

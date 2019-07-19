@@ -82,14 +82,14 @@ namespace Serial1602ShieldSystemUIController.Tests.Integration
             controller.Alerts.Clear ();
 
             // Move left to go to the end of the list
-            controller.MenuLeft ();
+            controller.PressMenuLeft ();
 
             // Loop backwards through the list
             for (int i = 2; i >= 0; i--) {
                 Assert.AreEqual (i, controller.MenuIndex, "The menu index doesn't match.");
 
                 // Move left again
-                controller.MenuLeft ();
+                controller.PressMenuLeft ();
             }
 
             Assert.AreEqual (2, controller.MenuIndex, "The menu index didn't go back to 2 as it should have.");
@@ -133,7 +133,7 @@ namespace Serial1602ShieldSystemUIController.Tests.Integration
 
             Assert.AreEqual (1, controller.MenuIndex, "The menu index doesn't match.");
 
-            controller.MenuSelect ();
+            controller.PressMenuSelect ();
 
             Assert.IsTrue (controller.DeviceIsSelected, "The device wasn't selected.");
 
@@ -176,7 +176,7 @@ namespace Serial1602ShieldSystemUIController.Tests.Integration
 
             Assert.AreEqual (1, controller.MenuIndex, "The menu index doesn't match.");
 
-            controller.MenuSelect ();
+            controller.PressMenuSelect ();
 
             Assert.IsTrue (controller.DeviceIsSelected, "The device wasn't selected.");
 
@@ -237,7 +237,7 @@ namespace Serial1602ShieldSystemUIController.Tests.Integration
 
             Assert.AreEqual (1, controller.MenuIndex, "The menu index doesn't match.");
 
-            controller.MenuSelect ();
+            controller.PressMenuSelect ();
 
             Assert.IsTrue (controller.DeviceIsSelected, "The device wasn't selected.");
 
@@ -249,12 +249,12 @@ namespace Serial1602ShieldSystemUIController.Tests.Integration
             var totalSubItems = controller.MenuStructure [controller.CurrentDevice.DeviceGroup].Items.Count;
 
             for (int i = totalSubItems - 1; i >= 0; i--) {
-                controller.MenuLeft ();
+                controller.PressMenuLeft ();
 
                 Assert.AreEqual (i, controller.SubMenuIndex, "The sub menu index doesn't match.");
             }
 
-            controller.MenuLeft ();
+            controller.PressMenuLeft ();
 
             Assert.AreEqual (totalSubItems - 1, controller.SubMenuIndex, "The sub menu index didn't go back to 0 as it should have.");
 

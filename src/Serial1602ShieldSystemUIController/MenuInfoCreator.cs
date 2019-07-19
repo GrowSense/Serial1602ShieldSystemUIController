@@ -79,6 +79,15 @@ namespace Serial1602ShieldSystemUIController
 
             uiMenuStructure.Items.Add ("Devices", new DeviceFilterMenuItemInfo (controller));
 
+            /* var upgradeOptions = new Dictionary<string, string> ();
+            upgradeOptions.Add ("No", "");
+#if DEBUG
+            upgradeOptions.Add ("Yes", "notify-send upgrading");
+#else
+            upgradeOptions.Add ("Yes", "sh upgrade.sh");
+#endif*/
+            uiMenuStructure.Items.Add ("Upload sketch", new UploadSketchMenuItemInfo ());
+
             var upgradeOptions = new Dictionary<string, string> ();
             upgradeOptions.Add ("No", "");
 #if DEBUG

@@ -48,7 +48,7 @@ namespace Serial1602ShieldSystemUIController.Tests.Integration
             controller.MenuIndex = 2;
 
             Console.WriteLine ("Pressing down button to select the UI device...");
-            controller.MenuDown ();
+            controller.PressMenuDown ();
 
             Console.WriteLine ("Running a loop to update display...");
             controller.RunLoop ();
@@ -70,7 +70,7 @@ namespace Serial1602ShieldSystemUIController.Tests.Integration
             mockClient.ClearOutput ();
 
             Console.WriteLine ("Pressing up button to change to local devices only...");
-            controller.MenuUp ();
+            controller.PressMenuUp ();
 
             Console.WriteLine ("Running a loop to update display...");
             controller.RunLoop ();
@@ -82,7 +82,7 @@ namespace Serial1602ShieldSystemUIController.Tests.Integration
             mockClient.ClearOutput ();
 
             Console.WriteLine ("Pressing select button to submit the change...");
-            controller.MenuSelect ();
+            controller.PressMenuSelect ();
 
             Console.WriteLine ("Running a loop to update display...");
             controller.RunLoop ();

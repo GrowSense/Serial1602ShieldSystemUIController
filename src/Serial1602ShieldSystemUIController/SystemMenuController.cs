@@ -403,15 +403,15 @@ namespace Serial1602ShieldSystemUIController
                 else if (line == "Starting...") {
                     StartDisplayOnDevice ();
                 } else if (line == "up")
-                    MenuUp ();
+                    PressMenuUp ();
                 else if (line == "down")
-                    MenuDown ();
+                    PressMenuDown ();
                 else if (line == "left")
-                    MenuLeft ();
+                    PressMenuLeft ();
                 else if (line == "right")
                     MenuRight ();
                 else if (line == "select")
-                    MenuSelect ();
+                    PressMenuSelect ();
             }
         }
 
@@ -495,6 +495,8 @@ namespace Serial1602ShieldSystemUIController
                 if (menuItemInfo != null) {
                     if (menuItemInfo is MqttMenuItemInfo)
                         RenderSubItemMqtt ((MqttMenuItemInfo)menuItemInfo);
+                    if (menuItemInfo is UploadSketchMenuItemInfo)
+                        RenderSubItemUploadSketch ((UploadSketchMenuItemInfo)menuItemInfo);
                     if (menuItemInfo is BashCommandMenuItemInfo)
                         RenderSubItemCommand ((BashCommandMenuItemInfo)menuItemInfo);
                     if (typeof(BaseCodeMenuItemInfo).IsAssignableFrom (menuItemInfo.GetType ()))
@@ -531,6 +533,28 @@ namespace Serial1602ShieldSystemUIController
             SendMessageToDisplay (1, message);
 
         }
+
+        public void RenderSubItemUploadSketch (UploadSketchMenuItemInfo menuItemInfo)
+        {
+            var message = String.Empty;
+            switch (menuItemInfo.StepIndex) {
+            case 0:
+                var valueLabel = menuItemInfo.Label;
+                message = valueLabel;
+                break;
+            case 1:
+                var selectedSketch = menuItemInfo.SelectedSketchIndex;
+                message = menuItemInfo.GetSketchInfoList () [selectedSketch].Label;
+                break;
+            case 2:
+                var selectedBoard = menuItemInfo.SelectedBoardIndex;
+                message = menuItemInfo.GetBoardList () [selectedBoard];
+                break;
+            }
+
+            SendMessageToDisplay (1, message);
+        }
+
 
         public void RenderSubItemCommand (BashCommandMenuItemInfo menuItemInfo)
         {
@@ -648,6 +672,11 @@ namespace Serial1602ShieldSystemUIController
             return null;
         }
 
+        public BaseMenuItemInfo GetCurrentMenuItemInfo ()
+        {
+            return GetMenuItemInfoByIndex (CurrentDevice.DeviceGroup, SubMenuIndex);
+        }
+
         public BaseMenuItemInfo GetMenuItemInfoByIndex (string deviceGroup, int subMenuIndex)
         {
             if (!MenuStructure.ContainsKey (deviceGroup))
@@ -669,20 +698,95 @@ namespace Serial1602ShieldSystemUIController
             return null;
         }
 
-        public void MenuUp ()
+        public void PressMenuUp ()
         {
             if (Alerts.Count > 0) {
                 CancelAlert ();
             } else if (DeviceIsSelected) {
-                SubMenuUp ();
+                PressSubMenuUp ();
             }
         }
 
-        public void SubMenuUp ()
+        public void PressSubMenuUp ()
         {
             var menuItemInfo = GetMenuItemInfoByIndex (CurrentDevice.DeviceGroup, SubMenuIndex);
 
-            if (menuItemInfo.IsEditable) {
+            if (menuItemInfo is UploadSketchMenuItemInfo) {
+                ((UploadSketchMenuItemInfo)menuItemInfo).Up ();
+                HasChanged = true;
+            } else if (menuItemInfo.IsEditable) {
+                var key = menuItemInfo.Key;
+
+                var existingValueString = String.Empty;
+
+                if (!CurrentDevice.UpdatedData.ContainsKey (key)) {
+                    if (!CurrentDevice.Data.ContainsKey (key))
+                        CurrentDevice.Data [key] = menuItemInfo.DefaultValue.ToString ();
+                    CurrentDevice.UpdatedData [key] = CurrentDevice.Data [key];
+                }
+
+                existingValueString = CurrentDevice.UpdatedData [key];
+
+                var existingValue = 0;
+                Int32.TryParse (existingValueString, out existingValue);
+
+                existingValue++;
+
+                if (existingValue > menuItemInfo.MaxValue)
+                    existingValue = menuItemInfo.MinValue;
+                if (existingValue < menuItemInfo.MinValue)
+                    existingValue = menuItemInfo.MaxValue;
+
+                CurrentDevice.UpdatedData [key] = existingValue.ToString ();
+                HasChanged = true;
+            }
+        }
+
+        public void PressSubMenuDown ()
+        {
+            var menuItemInfo = GetMenuItemInfoByIndex (CurrentDevice.DeviceGroup, SubMenuIndex);
+
+            if (menuItemInfo is UploadSketchMenuItemInfo) {
+                ((UploadSketchMenuItemInfo)menuItemInfo).Up ();
+                HasChanged = true;
+            } else if (menuItemInfo.IsEditable) {
+                var key = menuItemInfo.Key;
+
+                var existingValueString = String.Empty;
+
+                if (!CurrentDevice.UpdatedData.ContainsKey (key)) {
+                    CurrentDevice.UpdatedData [key] = CurrentDevice.Data [key];
+                }
+
+                existingValueString = CurrentDevice.UpdatedData [key];
+
+                var existingValue = 0;
+
+                if (String.IsNullOrEmpty (existingValueString)) {
+                    existingValueString = 0.ToString ();
+                } else
+                    existingValue = Convert.ToInt32 (existingValueString);
+
+                existingValue--;
+
+                if (existingValue > menuItemInfo.MaxValue)
+                    existingValue = menuItemInfo.MinValue;
+                if (existingValue < menuItemInfo.MinValue)
+                    existingValue = menuItemInfo.MaxValue;
+
+                CurrentDevice.UpdatedData [key] = existingValue.ToString ();
+                   
+                HasChanged = true;
+            }
+        }
+
+        public void SubMenuDown ()
+        {
+            var menuItemInfo = GetMenuItemInfoByIndex (CurrentDevice.DeviceGroup, SubMenuIndex);
+
+            if (menuItemInfo is UploadSketchMenuItemInfo) {
+                ((UploadSketchMenuItemInfo)menuItemInfo).Down ();
+            } else if (menuItemInfo.IsEditable) {
                 var key = menuItemInfo.Key;
 
                 var existingValueString = String.Empty;
@@ -712,7 +816,7 @@ namespace Serial1602ShieldSystemUIController
             }
         }
 
-        public void MenuDown ()
+        public void PressMenuDown ()
         {
             if (Alerts.Count > 0) {
                 CancelAlert ();
@@ -720,41 +824,11 @@ namespace Serial1602ShieldSystemUIController
                 DeviceIsSelected = true;
                 HasChanged = true;
             } else {
-                var menuStructureItem = GetMenuItemInfoByIndex (CurrentDevice.DeviceGroup, SubMenuIndex);
-
-                if (menuStructureItem.IsEditable) {
-                    var key = menuStructureItem.Key;
-
-                    var existingValueString = String.Empty;
-
-                    if (!CurrentDevice.UpdatedData.ContainsKey (key)) {
-                        CurrentDevice.UpdatedData [key] = CurrentDevice.Data [key];
-                    }
-
-                    existingValueString = CurrentDevice.UpdatedData [key];
-
-                    var existingValue = 0;
-
-                    if (String.IsNullOrEmpty (existingValueString)) {
-                        existingValueString = 0.ToString ();
-                    } else
-                        existingValue = Convert.ToInt32 (existingValueString);
-
-                    existingValue--;
-
-                    if (existingValue > menuStructureItem.MaxValue)
-                        existingValue = menuStructureItem.MinValue;
-                    if (existingValue < menuStructureItem.MinValue)
-                        existingValue = menuStructureItem.MaxValue;
-
-                    CurrentDevice.UpdatedData [key] = existingValue.ToString ();
-                   
-                    HasChanged = true;
-                }
+                PressSubMenuDown ();
             }
         }
 
-        public void MenuLeft ()
+        public void PressMenuLeft ()
         {
             if (Alerts.Count > 0) {
                 CancelAlert ();
@@ -816,23 +890,27 @@ namespace Serial1602ShieldSystemUIController
             HasChanged = true;
         }
 
-        public void MenuSelect ()
+        public void PressMenuSelect ()
         {
             var menuItemInfo = GetMenuItemInfoByIndex (CurrentDevice.DeviceGroup, SubMenuIndex);
-            var isEditingValue = DeviceIsSelected && menuItemInfo.IsEditable;
-            var valueHasChanged = false;
-            if (CurrentDevice.Data.ContainsKey (menuItemInfo.Key)) {
-                if (CurrentDevice.UpdatedData.ContainsKey (menuItemInfo.Key) &&
-                    CurrentDevice.UpdatedData [menuItemInfo.Key] != CurrentDevice.Data [menuItemInfo.Key]) {
-                    valueHasChanged = true;
-                }
-            } else
-                valueHasChanged = true;
-                    
-            if (isEditingValue && valueHasChanged) {
-                SubmitSelection ();
+            if (menuItemInfo is UploadSketchMenuItemInfo) {
+                ((UploadSketchMenuItemInfo)menuItemInfo).Select ();
             } else {
-                DeviceIsSelected = !DeviceIsSelected;
+                var isEditingValue = DeviceIsSelected && menuItemInfo.IsEditable;
+                var valueHasChanged = false;
+                if (CurrentDevice.Data.ContainsKey (menuItemInfo.Key)) {
+                    if (CurrentDevice.UpdatedData.ContainsKey (menuItemInfo.Key) &&
+                        CurrentDevice.UpdatedData [menuItemInfo.Key] != CurrentDevice.Data [menuItemInfo.Key]) {
+                        valueHasChanged = true;
+                    }
+                } else
+                    valueHasChanged = true;
+                    
+                if (isEditingValue && valueHasChanged) {
+                    SubmitSelection ();
+                } else {
+                    DeviceIsSelected = !DeviceIsSelected;
+                }
             }
             HasChanged = true;
         }
