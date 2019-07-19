@@ -49,6 +49,18 @@ pipeline {
                 sh 'sh test.sh'
             }
         }
+        stage('Create Release Zip') {
+            when { expression { !shouldSkipBuild() } }
+            steps {
+                sh 'sh create-release-zip.sh'
+            }
+        }
+        stage('Publish GitHub Release') {
+            when { expression { !shouldSkipBuild() } }
+            steps {
+                sh 'sh publish-github-release.sh'
+            }
+        }
         stage('Pack') {
             when { expression { !shouldSkipBuild() } }
             steps {

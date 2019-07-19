@@ -210,6 +210,8 @@ namespace Serial1602ShieldSystemUIController
                     MqttClient.Connect (clientId, MqttUsername, MqttPassword);
 
                     IsConnected = true;
+                    
+                    Console.WriteLine("Connected to MQTT broker");
                 } catch (Exception ex) {
                     Console.WriteLine ("Error: Failed to connect to MQTT broker");
                     Console.WriteLine ("Host: " + MqttHost);
