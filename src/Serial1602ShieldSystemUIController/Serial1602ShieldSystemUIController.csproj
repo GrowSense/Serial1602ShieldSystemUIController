@@ -41,7 +41,6 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BaseMenuItemInfo.cs" />
-    <Compile Include="CommandMenuItemInfo.cs" />
     <Compile Include="DeviceInfo.cs" />
     <Compile Include="MenuInfo.cs" />
     <Compile Include="MenuInfoCreator.cs" />
@@ -55,6 +54,7 @@
     <Compile Include="RemoveDeviceMenuItemInfo.cs" />
     <Compile Include="UploadSketchMenuItemInfo.cs" />
     <Compile Include="SketchInfo.cs" />
+    <Compile Include="BashCommandMenuItemInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

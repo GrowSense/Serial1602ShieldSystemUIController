@@ -79,13 +79,6 @@ namespace Serial1602ShieldSystemUIController
 
             uiMenuStructure.Items.Add ("Devices", new DeviceFilterMenuItemInfo (controller));
 
-            /* var upgradeOptions = new Dictionary<string, string> ();
-            upgradeOptions.Add ("No", "");
-#if DEBUG
-            upgradeOptions.Add ("Yes", "notify-send upgrading");
-#else
-            upgradeOptions.Add ("Yes", "sh upgrade.sh");
-#endif*/
             uiMenuStructure.Items.Add ("Upload sketch", new UploadSketchMenuItemInfo ());
 
             var upgradeOptions = new Dictionary<string, string> ();
@@ -93,7 +86,7 @@ namespace Serial1602ShieldSystemUIController
 #if DEBUG
             upgradeOptions.Add ("Yes", "notify-send upgrading");
 #else
-            upgradeOptions.Add ("Yes", "sh upgrade.sh");
+            upgradeOptions.Add ("Yes", "cd /usr/local/GreenSense/Index && bash upgrade.sh");
 #endif
             uiMenuStructure.Items.Add ("Upgrade", new BashCommandMenuItemInfo ("Upgrade", "Upgrade", "", true, upgradeOptions, "No", "Upgrading"));
 
@@ -102,7 +95,7 @@ namespace Serial1602ShieldSystemUIController
 #if DEBUG
             reinstallOptions.Add ("Yes", "notify-send reinstalling");
 #else
-            reinstallOptions.Add ("Yes", "cd scripts-web && sh reinstall-plug-and-play-from-web.sh");
+            reinstallOptions.Add ("Yes", "cd /usr/local/GreenSense/Index && cd scripts-web && bash reinstall-plug-and-play-from-web.sh");
 #endif
             uiMenuStructure.Items.Add ("Reinstall", new BashCommandMenuItemInfo ("Reinstall", "Reinstall", "", true, reinstallOptions, "No", "Reinstalling"));
 
@@ -111,7 +104,7 @@ namespace Serial1602ShieldSystemUIController
 #if DEBUG
             clearDevicesOptions.Add ("Yes", "notify-send resetting");
 #else
-            clearDevicesOptions.Add ("Yes", "sh clean-devices.sh");
+            clearDevicesOptions.Add ("Yes", "cd /usr/local/GreenSense/Index/ && sh clean-devices.sh");
 #endif
             uiMenuStructure.Items.Add ("Clean", new BashCommandMenuItemInfo ("Clean", "Clean", "", true, clearDevicesOptions, "No", "Cleaning\ndevices"));
 
@@ -120,9 +113,20 @@ namespace Serial1602ShieldSystemUIController
 #if DEBUG
             rebootOptions.Add ("Yes", "notify-send rebooting");
 #else
-            rebootOptions.Add ("Yes", "reboot now");
+            rebootOptions.Add ("Yes", "cd /usr/local/GreenSense/Index/ && bash reboot.sh");
 #endif
             uiMenuStructure.Items.Add ("Reboot", new BashCommandMenuItemInfo ("Reboot", "Reboot", "", true, rebootOptions, "No", "Rebooting\ncomputer"));
+
+            var shutdownOptions = new Dictionary<string, string> ();
+            shutdownOptions.Add ("No", "");
+#if DEBUG
+            shutdownOptions.Add ("Yes", "notify-send \"shutting down\"");
+#else
+            shutdownOptions.Add ("Yes", "cd /usr/local/GreenSense/Index/ && bash shutdown.sh");
+#endif
+            uiMenuStructure.Items.Add ("Shutdown", new BashCommandMenuItemInfo ("Shutdown", "Shutdown", "", true, shutdownOptions, "No", "Shutting\ndown"));
+
+
             uiMenuStructure.Items.Add ("V", new MqttMenuItemInfo ("V", "Version", "", false));
             uiMenuStructure.Items.Add ("Remove", new RemoveDeviceMenuItemInfo ());
             controller.MenuStructure.Add ("ui", uiMenuStructure);

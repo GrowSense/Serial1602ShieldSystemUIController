@@ -67,7 +67,7 @@ namespace Serial1602ShieldSystemUIController
 
         public int SleepTimeBetweenLoops = 50;
 
-        public int MqttStatusPublishIntervalInSeconds = 30;
+        public int MqttStatusPublishIntervalInSeconds = 5;
         public DateTime LastMqttStatusPublished = DateTime.MinValue;
 
         public ProcessStarter Starter = new ProcessStarter ();
@@ -211,7 +211,7 @@ namespace Serial1602ShieldSystemUIController
 
                     IsConnected = true;
                     
-                    Console.WriteLine("Connected to MQTT broker");
+                    Console.WriteLine ("Connected to MQTT broker");
                 } catch (Exception ex) {
                     Console.WriteLine ("Error: Failed to connect to MQTT broker");
                     Console.WriteLine ("Host: " + MqttHost);
