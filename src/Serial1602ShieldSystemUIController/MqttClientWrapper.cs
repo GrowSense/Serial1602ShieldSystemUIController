@@ -15,20 +15,11 @@ namespace Serial1602ShieldSystemUIController
         {
         }
 
-        public MqttClientWrapper (MqttClient mqttClient)
-        {
-            Client = mqttClient;
-        }
-
-        public MqttClientWrapper (string host, int port)
+        public virtual void Connect (string host, int port, string clientId, string username, string password)
         {
             Client = new MqttClient (host, port, false, null, null, MqttSslProtocols.None);
             Client.MqttMsgPublishReceived += Client_MqttMsgPublishReceived;
 
-        }
-
-        public virtual void Connect (string clientId, string username, string password)
-        {
             Client.Connect (clientId, username, password);
         }
 

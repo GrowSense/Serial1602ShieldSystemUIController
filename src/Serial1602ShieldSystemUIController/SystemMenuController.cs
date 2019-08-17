@@ -84,6 +84,7 @@ namespace Serial1602ShieldSystemUIController
 
         public SystemMenuController ()
         {
+            MqttClient = new MqttClientWrapper ();
         }
 
         public void Run ()
@@ -201,13 +202,11 @@ namespace Serial1602ShieldSystemUIController
         {
             while (!IsConnected) {
                 try {
-                    MqttClient = new MqttClientWrapper (MqttHost, MqttPort);
-
                     var clientId = Guid.NewGuid ().ToString ();
 
                     MqttClient.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
 
-                    MqttClient.Connect (clientId, MqttUsername, MqttPassword);
+                    MqttClient.Connect (MqttHost, MqttPort, clientId, MqttUsername, MqttPassword);
 
                     IsConnected = true;
                     
@@ -242,6 +241,8 @@ namespace Serial1602ShieldSystemUIController
                 Console.WriteLine ("== Start UI Controller Loop");
 
             LoopNumber++;
+
+            EnsureConnectedToMQTT ();
 
             RemoveLostDevices ();
 
@@ -280,6 +281,12 @@ namespace Serial1602ShieldSystemUIController
             Console.WriteLine ("Subscribe topic: " + deviceTopicPattern);
             list.Add (deviceTopicPattern);
             return list.ToArray ();
+        }
+
+        public void EnsureConnectedToMQTT ()
+        {
+            if (MqttClient == null || MqttClient.Client == null || !MqttClient.Client.IsConnected)
+                SetupMQTT ();
         }
 
         public void EnsureConnectedToSerialDevice ()

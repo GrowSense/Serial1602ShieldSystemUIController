@@ -14,10 +14,10 @@ namespace Serial1602ShieldSystemUIController.Tests
         {
         }
 
-        public override void Connect (string clientId, string username, string password)
+        public override void Connect (string mqttHost, int mqttPort, string clientId, string username, string password)
         {
             if (EnableBaseFunctionality)
-                base.Connect (clientId, username, password);
+                base.Connect (mqttHost, mqttPort, clientId, username, password);
         }
 
         public override void Publish (string topic, byte[] value)

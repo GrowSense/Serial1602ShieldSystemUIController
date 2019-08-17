@@ -30,7 +30,7 @@ namespace Serial1602ShieldSystemUIController.Tests.Integration
             controller.RunLoop ();
 
             Assert.AreEqual (1, controller.DeviceList.Count, "The device wasn't added to the list.");
-            Assert.AreEqual (1, mockMqttClient.Subscriptions.Count, "The device MQTT subscriptions weren't found.");
+            Assert.AreEqual (2, mockMqttClient.Subscriptions.Count, "The device MQTT subscriptions weren't found.");
         }
 
         [Test]
