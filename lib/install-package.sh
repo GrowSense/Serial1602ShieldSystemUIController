@@ -19,8 +19,8 @@ PACKAGE_FILE_EXT="$PACKAGE_NAME.$PACKAGE_VERSION.nupkg"
 
 echo "Package file: $PACKAGE_FILE"
 
-# TODO: Move all packages to a central repository outside the GreenSense project
+# TODO: Move all packages to a central repository outside the GrowSense project
 
-wget -q "https://github.com/GreenSense/libs/raw/master/$PACKAGE_FILE.nupkg" -O $PACKAGE_FILE_EXT
+wget -q "https://github.com/GrowSense/libs/raw/master/$PACKAGE_FILE.nupkg" -O $PACKAGE_FILE_EXT
 
 unzip -q -o "$PACKAGE_FILE_EXT" -d "$PACKAGE_FILE/"

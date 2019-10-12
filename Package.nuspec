@@ -5,9 +5,9 @@
     <version>1.0.0</version>
     <authors>compulsivecoder</authors>
     <owners>compulsivecoder</owners>
-    <projectUrl>https://github.com/GreenSense/Serial1602ShieldSystemUIController</projectUrl>
+    <projectUrl>https://github.com/GrowSense/Serial1602ShieldSystemUIController</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>An MQTT based controller for the GreenSense 1602 LCD shield system UI.</description>
+    <description>An MQTT based controller for the GrowSense 1602 LCD shield system UI.</description>
     <copyright>Copyright 2017</copyright>
     <tags>arduino</tags>
   </metadata>
