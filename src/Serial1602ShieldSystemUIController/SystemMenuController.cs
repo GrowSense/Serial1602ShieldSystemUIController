@@ -48,7 +48,7 @@ namespace Serial1602ShieldSystemUIController
     public Queue<string> Alerts = new Queue<string> ();
     public int AlertDisplayDuration = 5;
     public DateTime AlertDisplayStartTime;
-    public int SleepTimeBetweenLoops = 50;
+    public int SleepTimeBetweenLoops = 200;
     public int MqttStatusPublishIntervalInSeconds = 5;
     public DateTime LastMqttStatusPublished = DateTime.MinValue;
     public ProcessStarter Starter = new ProcessStarter ();
