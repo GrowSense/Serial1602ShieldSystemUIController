@@ -70,8 +70,12 @@ namespace Serial1602ShieldSystemUIController
 
       if (String.IsNullOrEmpty (DevicesDirectory))
         throw new Exception ("DevicesDirectory property not set.");
-      if (!Directory.Exists (DevicesDirectory))
-        throw new Exception ("Cannot find devices directory: " + DevicesDirectory);
+      if (!Directory.Exists (DevicesDirectory)) {
+        Console.WriteLine ("Devices directory not found:");
+        Console.WriteLine ("  " + DevicesDirectory);
+        Console.WriteLine ("Creating devices directory...");
+        Directory.CreateDirectory (DevicesDirectory);
+      }
 
       Console.WriteLine ("Devices directory:");
       Console.WriteLine (DevicesDirectory);
