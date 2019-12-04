@@ -10,6 +10,7 @@ using uPLibrary.Networking.M2Mqtt.Messages;
 using uPLibrary.Networking.M2Mqtt;
 using System.Text;
 using uPLibrary.Networking.M2Mqtt.Exceptions;
+using System.Linq;
 
 namespace Serial1602ShieldSystemUIController
 {
@@ -648,15 +649,7 @@ namespace Serial1602ShieldSystemUIController
 
     public DeviceInfo GetDeviceByIndex (int deviceIndex)
     {
-      var i = 0;
-      foreach (var entry in DeviceList) {
-        if (i == deviceIndex)
-          return entry.Value;
-
-        i++;
-      }
-
-      return null;
+      return DeviceList.ElementAt (deviceIndex).Value;
     }
 
     public BaseMenuItemInfo GetCurrentMenuItemInfo ()
