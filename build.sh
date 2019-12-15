@@ -1,3 +1,3 @@
 #!/bin/bash
 
-sh build-controller.sh
+sh build-controller.sh || exit 1

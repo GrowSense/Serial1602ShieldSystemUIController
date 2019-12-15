@@ -12,6 +12,6 @@ fi
 echo "Mode: $MODE"
 
 cd src
-sh build.sh $MODE
+sh build.sh $MODE || exit 1
 
 cd $DIR

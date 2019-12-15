@@ -7,6 +7,6 @@ bash install-package-from-libs-repository.sh CompulsiveCoder Newtonsoft.Json 11.
 bash install-package-from-libs-repository.sh CompulsiveCoder M2Mqtt 4.3.0.0 || exit 1
 bash install-package-from-libs-repository.sh CompulsiveCoder M2Mqtt 4.3.0.0 || exit 1
 
-bash install-package-from-github-release.sh CompulsiveCoder duinocom.core 1.2.0.25 || exit 1
+bash install-package-from-github-release.sh CompulsiveCoder duinocom.core 1.2.0.27 || exit 1
 
 echo "Finished getting library files."
