@@ -8,9 +8,9 @@ FULL_VERSION=$VERSION.$BUILD_NUMBER
 
 BRANCH=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
 
-if [ "$BRANCH" = "dev" ]
+if [ "$BRANCH" != "lts" ]
 then
-    FULL_VERSION="$FULL_VERSION-dev"
+    FULL_VERSION="$FULL_VERSION-$BRANCH"
 fi
 
 PROJECT_NAME="Serial1602ShieldSystemUIController"
