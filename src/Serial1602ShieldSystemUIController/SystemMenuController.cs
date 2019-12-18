@@ -649,7 +649,8 @@ namespace Serial1602ShieldSystemUIController
 
     public DeviceInfo GetDeviceByIndex (int deviceIndex)
     {
-      return DeviceList.ElementAt (deviceIndex).Value;
+      var devices = new List<DeviceInfo> (DeviceList.Values);
+      return devices [deviceIndex];
     }
 
     public BaseMenuItemInfo GetCurrentMenuItemInfo ()
