@@ -233,7 +233,7 @@ namespace Serial1602ShieldSystemUIController
 
       EnsureConnectedToSerialDevice ();
 
-      if (Client.HasData) {
+      while (Client.HasData) {
         var line = Client.ReadLine ();
 
         ProcessLineFromDevice (line.Trim ());
