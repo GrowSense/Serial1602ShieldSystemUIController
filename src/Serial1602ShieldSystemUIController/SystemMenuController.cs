@@ -655,14 +655,23 @@ namespace Serial1602ShieldSystemUIController
 
     public DeviceInfo GetDeviceByIndex (int deviceIndex)
     {
-      var devices = new List<DeviceInfo> ();
-      devices.AddRange (DeviceList.Values);
-      if (devices.Count > deviceIndex)
-        return devices [deviceIndex];
-      else if (devices.Count > 0)
-        return devices [0];
-      else
-        return null;
+      // This try/catch statement is a workaround to an intermittent exception.
+      // TODO: See if there is a better way to deal with it.
+      try {
+        var devices = new List<DeviceInfo> ();
+        devices.AddRange (DeviceList.Values);
+        if (devices.Count > deviceIndex)
+          return devices [deviceIndex];
+        else if (devices.Count > 0)
+          return devices [0];
+        else
+          return null;
+      } catch (ArgumentException ex) {
+        Console.WriteLine ("Failed to get device by index.");
+        Console.WriteLine ("Exception: " + ex.Message);
+        Console.WriteLine ("Retrying...");
+        return GetDeviceByIndex (deviceIndex);
+      }
     }
 
     public BaseMenuItemInfo GetCurrentMenuItemInfo ()
