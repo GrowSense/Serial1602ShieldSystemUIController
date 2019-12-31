@@ -39,7 +39,12 @@ namespace Serial1602ShieldSystemUIController
     //public DeviceInfo CurrentDevice;
     public DeviceInfo CurrentDevice {
       get {
-        return GetDeviceByIndex (MenuIndex);
+        var device = GetDeviceByIndex (MenuIndex);
+        if (device == null) {
+          MenuIndex = 0;
+          device = GetDeviceByIndex (MenuIndex);
+        }
+        return device;
       }
     }
 
@@ -308,10 +313,12 @@ namespace Serial1602ShieldSystemUIController
     {
       for (int i = 0; i < DeviceList.Count; i++) {
         var deviceInfo = GetDeviceByIndex (i);
-        var deviceDir = Path.Combine (DevicesDirectory, deviceInfo.DeviceName);
-        if (!Directory.Exists (deviceDir)) {
-          RemoveDevice (deviceInfo);
-          i--;
+        if (deviceInfo != null) {
+          var deviceDir = Path.Combine (DevicesDirectory, deviceInfo.DeviceName);
+          if (!Directory.Exists (deviceDir)) {
+            RemoveDevice (deviceInfo);
+            i--;
+          }
         }
       }
     }
@@ -468,7 +475,8 @@ namespace Serial1602ShieldSystemUIController
             SendMessageToDisplay (0, fullTitle);
 
             RenderSubItem ();
-          }
+          } else
+            MenuIndex = 0;
           HasChanged = false;
         }
       }
@@ -651,7 +659,12 @@ namespace Serial1602ShieldSystemUIController
     {
       var devices = new List<DeviceInfo> ();
       devices.AddRange (DeviceList.Values);
-      return devices [deviceIndex];
+      if (devices.Count > deviceIndex)
+        return devices [deviceIndex];
+      else if (devices.Count > 0)
+        return devices [0];
+      else
+        return null;
     }
 
     public BaseMenuItemInfo GetCurrentMenuItemInfo ()
