@@ -292,21 +292,19 @@ namespace Serial1602ShieldSystemUIController
       if (String.IsNullOrEmpty (DevicesDirectory))
         throw new Exception ("DevicesDirectory property not set.");
 
-      if (!Directory.Exists (DevicesDirectory))
-        throw new Exception ("Can't find devices directory: " + DevicesDirectory);
-
-      foreach (var deviceDir in Directory.GetDirectories(DevicesDirectory)) {
-        var deviceName = Path.GetFileName (deviceDir);
-        if (!DeviceList.ContainsKey (deviceName)) {
-          var deviceInfo = LoadDeviceInfo (deviceName);
-          if (deviceInfo != null) {
-            var isEnabledOnDisplay = deviceInfo.DeviceHost == SelfHostName || !ShowLocalDevicesOnly;
-            if (isEnabledOnDisplay)
-              AddDevice (deviceInfo);
+      if (Directory.Exists (DevicesDirectory)) {
+        foreach (var deviceDir in Directory.GetDirectories(DevicesDirectory)) {
+          var deviceName = Path.GetFileName (deviceDir);
+          if (!DeviceList.ContainsKey (deviceName)) {
+            var deviceInfo = LoadDeviceInfo (deviceName);
+            if (deviceInfo != null) {
+              var isEnabledOnDisplay = deviceInfo.DeviceHost == SelfHostName || !ShowLocalDevicesOnly;
+              if (isEnabledOnDisplay)
+                AddDevice (deviceInfo);
+            }
           }
         }
       }
-
     }
 
     public void RemoveLostDevices ()
