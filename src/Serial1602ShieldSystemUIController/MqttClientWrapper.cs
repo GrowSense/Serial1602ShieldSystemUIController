@@ -9,8 +9,8 @@ namespace Serial1602ShieldSystemUIController
   {
     public MqttClient Client;
 
-    public bool IsConnected {
-      get { return Client.IsConnected; }
+    public virtual bool IsConnected {
+      get { return Client != null && Client.IsConnected; }
     }
 
     public event MqttClient.ConnectionClosedEventHandler ConnectionClosed;
