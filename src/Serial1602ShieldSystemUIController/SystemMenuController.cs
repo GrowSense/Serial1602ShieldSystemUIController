@@ -62,7 +62,12 @@ namespace Serial1602ShieldSystemUIController
     public bool IsInitialized = false;
     public string SelfHostName = "";
     public bool ShowLocalDevicesOnly = false;
-    public bool IsConnected = false;
+
+    public bool IsConnected {
+      get { return MqttClient != null && MqttClient.IsConnected; }
+    }
+
+    public bool IsDisposing = false;
 
     public SystemMenuController ()
     {
@@ -191,11 +196,10 @@ namespace Serial1602ShieldSystemUIController
           var clientId = Guid.NewGuid ().ToString ();
 
           MqttClient.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
+          MqttClient.ConnectionClosed += MqttClient_ConnectionClosed;
 
           MqttClient.Connect (MqttHost, MqttPort, clientId, MqttUsername, MqttPassword);
 
-          IsConnected = true;
-                    
           Console.WriteLine ("Connected to MQTT broker");
         } catch (Exception ex) {
           Console.WriteLine ("Error: Failed to connect to MQTT broker");
@@ -209,6 +213,7 @@ namespace Serial1602ShieldSystemUIController
 
           Thread.Sleep (WaitTimeBeforeRetry * 1000);
         }
+
       }
 
 
@@ -844,7 +849,7 @@ namespace Serial1602ShieldSystemUIController
         var menuItemInfo = GetMenuItemInfoByIndex (CurrentDevice.DeviceGroup, SubMenuIndex);
         var isEditingValue = DeviceIsSelected && menuItemInfo.IsEditable;
         var valueHasChanged = CurrentDevice.UpdatedData.ContainsKey (menuItemInfo.Key)
-          && CurrentDevice.UpdatedData [menuItemInfo.Key] != CurrentDevice.Data [menuItemInfo.Key];
+                              && CurrentDevice.UpdatedData [menuItemInfo.Key] != CurrentDevice.Data [menuItemInfo.Key];
 
         if (isEditingValue && valueHasChanged) {
           PublishUpdatedValue ();
@@ -875,7 +880,7 @@ namespace Serial1602ShieldSystemUIController
         var menuItemInfo = GetMenuItemInfoByIndex (CurrentDevice.DeviceGroup, SubMenuIndex);
         var isEditingValue = DeviceIsSelected && menuItemInfo.IsEditable;
         var valueHasChanged = CurrentDevice.UpdatedData.ContainsKey (menuItemInfo.Key)
-          && CurrentDevice.UpdatedData [menuItemInfo.Key] != CurrentDevice.Data [menuItemInfo.Key];
+                              && CurrentDevice.UpdatedData [menuItemInfo.Key] != CurrentDevice.Data [menuItemInfo.Key];
 
         if (isEditingValue && valueHasChanged) {
           PublishUpdatedValue ();
@@ -900,7 +905,7 @@ namespace Serial1602ShieldSystemUIController
         var valueHasChanged = false;
         if (CurrentDevice.Data.ContainsKey (menuItemInfo.Key)) {
           if (CurrentDevice.UpdatedData.ContainsKey (menuItemInfo.Key) &&
-            CurrentDevice.UpdatedData [menuItemInfo.Key] != CurrentDevice.Data [menuItemInfo.Key]) {
+              CurrentDevice.UpdatedData [menuItemInfo.Key] != CurrentDevice.Data [menuItemInfo.Key]) {
             valueHasChanged = true;
           }
         } else
@@ -1025,7 +1030,7 @@ namespace Serial1602ShieldSystemUIController
       var fullTopic = deviceTopic + "/" + key + "/in";
 
       if (CurrentDevice.UpdatedData.ContainsKey (key) &&
-        CurrentDevice.UpdatedData [key] != CurrentDevice.Data [key]) {
+          CurrentDevice.UpdatedData [key] != CurrentDevice.Data [key]) {
         var value = CurrentDevice.UpdatedData [key];
 
         CurrentDevice.Data [key] = value;
@@ -1037,9 +1042,9 @@ namespace Serial1602ShieldSystemUIController
     public void SendErrorEmail (Exception error, string deviceName, string smtpServer, string emailAddress)
     {
       var areDetailsProvided = (smtpServer != "mail.example.com" &&
-        emailAddress != "user@example.com" &&
-        !String.IsNullOrWhiteSpace (smtpServer) &&
-        !String.IsNullOrWhiteSpace (emailAddress));
+                               emailAddress != "user@example.com" &&
+                               !String.IsNullOrWhiteSpace (smtpServer) &&
+                               !String.IsNullOrWhiteSpace (emailAddress));
 
       if (areDetailsProvided) {
         try {
@@ -1206,8 +1211,17 @@ namespace Serial1602ShieldSystemUIController
       return selfHostName;
     }
 
+    void MqttClient_ConnectionClosed (object sender, EventArgs e)
+    {
+      if (!IsDisposing) {
+        Console.WriteLine ("MQTT connection closed. Reconnecting...");
+        SetupMQTT ();
+      }
+    }
+
     public void Dispose ()
     {
+      IsDisposing = true;
       Client.Close ();
     }
   }

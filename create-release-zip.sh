@@ -31,11 +31,25 @@ cp $BIN_RELEASE_FOLDER/duinocom.core.dll $TMP_RELEASE_FOLDER/
 cp $BIN_RELEASE_FOLDER/nunit.framework.dll $TMP_RELEASE_FOLDER/
 cp $BIN_RELEASE_FOLDER/M2Mqtt.Net.dll $TMP_RELEASE_FOLDER/
 
+echo "$VERSION" > $TMP_RELEASE_FOLDER/version.txt
+
 mkdir -p $RELEASES_FOLDER
 
 cd .tmp/Serial1602ShieldSystemUIController
 
+echo ""
+echo "  Zipping release..."
 zip -r $DIR/releases/Serial1602ShieldSystemUIController.$VERSION$VERSION_POSTFIX.zip *
+
+cd $DIR/releases
+
+echo ""
+echo "  Unzipping release..."
+unzip Serial1602ShieldSystemUIController.$VERSION$VERSION_POSTFIX.zip -d Serial1602ShieldSystemUIController.$VERSION$VERSION_POSTFIX
+
+echo ""
+echo "  Listing release contents..."
+ls Serial1602ShieldSystemUIController.$VERSION$VERSION_POSTFIX -R
 
 cd $DIR
 
