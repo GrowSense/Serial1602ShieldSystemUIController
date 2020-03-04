@@ -1214,7 +1214,8 @@ namespace Serial1602ShieldSystemUIController
     void MqttClient_ConnectionClosed (object sender, EventArgs e)
     {
       if (!IsDisposing) {
-        Console.WriteLine ("MQTT connection closed. Reconnecting...");
+        Console.WriteLine ("MQTT connection closed. Reconnecting in " + WaitTimeBeforeRetry + " seconds...");
+        Thread.Sleep (WaitTimeBeforeRetry * 1000);
         SetupMQTT ();
       }
     }
