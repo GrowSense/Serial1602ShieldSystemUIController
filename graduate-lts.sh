@@ -21,7 +21,7 @@ git pull origin rc || exit 1
 
 echo ""
 echo "Merging the lts branch into the rc branch..."
-git merge lts || exit 1
+git merge origin/lts || exit 1
 
 echo ""
 echo "Checking out the lts branch..."
