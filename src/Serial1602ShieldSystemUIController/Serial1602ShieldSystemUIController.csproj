@@ -10,8 +10,6 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <SignAssembly>false</SignAssembly>
     <AssemblyOriginatorKeyFile>Serial1602ShieldSystemUIController.snk</AssemblyOriginatorKeyFile>
-    <ProductVersion>12.0.0</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -55,9 +53,7 @@
     <Compile Include="DeviceFilterMenuItemInfo.cs" />
     <Compile Include="BaseCodeMenuItemInfo.cs" />
     <Compile Include="RemoveDeviceMenuItemInfo.cs" />
-    <Compile Include="UploadSketchMenuItemInfo.cs">
-      <DependentUpon>SystemMenuController.cs</DependentUpon>
-    </Compile>
+    <Compile Include="UploadSketchMenuItemInfo.cs" />
     <Compile Include="SketchInfo.cs" />
     <Compile Include="BashCommandMenuItemInfo.cs" />
   </ItemGroup>

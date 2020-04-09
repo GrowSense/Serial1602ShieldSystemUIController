@@ -47,6 +47,9 @@ namespace Serial1602ShieldSystemUIController.ClientConsole
 
       controller.EmailAddress = GetConfigValue (arguments, "EmailAddress");
       controller.SmtpServer = GetConfigValue (arguments, "SmtpServer");
+      controller.SmtpUsername = GetConfigValue (arguments, "SmtpUsername");
+      controller.SmtpPassword = GetConfigValue (arguments, "SmtpPassword");
+      controller.SmtpPort = Convert.ToInt32 (GetConfigValue (arguments, "SmtpPort"));
 
       controller.DevicesDirectory = GetConfigValue (arguments, "DevicesDirectory");
       controller.TargetDirectory = GetConfigValue (arguments, "TargetDirectory");

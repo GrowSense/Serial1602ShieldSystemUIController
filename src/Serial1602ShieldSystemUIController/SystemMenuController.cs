@@ -11,6 +11,7 @@ using uPLibrary.Networking.M2Mqtt;
 using System.Text;
 using uPLibrary.Networking.M2Mqtt.Exceptions;
 using System.Linq;
+using System.Net;
 
 namespace Serial1602ShieldSystemUIController
 {
@@ -34,6 +35,9 @@ namespace Serial1602ShieldSystemUIController
     public string DeviceName;
     public string EmailAddress;
     public string SmtpServer;
+    public string SmtpUsername;
+    public string SmtpPassword;
+    public int SmtpPort;
     public int LoopNumber = 0;
     public bool DeviceIsSelected;
     //public DeviceInfo CurrentDevice;
@@ -119,7 +123,7 @@ namespace Serial1602ShieldSystemUIController
           Console.WriteLine ();
           Console.WriteLine ("Waiting for " + WaitTimeBeforeRetry + " seconds then retrying");
 
-          SendErrorEmail (ex, DeviceName, SmtpServer, EmailAddress);
+          SendErrorEmail (ex, DeviceName, SmtpServer, EmailAddress, SmtpUsername, SmtpPassword, SmtpPort);
 
           Thread.Sleep (WaitTimeBeforeRetry * 1000);
 
@@ -1039,10 +1043,12 @@ namespace Serial1602ShieldSystemUIController
       }
     }
 
-    public void SendErrorEmail (Exception error, string deviceName, string smtpServer, string emailAddress)
+    public void SendErrorEmail (Exception error, string deviceName, string smtpServer, string emailAddress, string smtpUsername, string smtpPassword, int smtpPort)
     {
       var areDetailsProvided = (smtpServer != "mail.example.com" &&
                                emailAddress != "user@example.com" &&
+                               smtpServer != "na" &&
+                               emailAddress != "na" &&
                                !String.IsNullOrWhiteSpace (smtpServer) &&
                                !String.IsNullOrWhiteSpace (emailAddress));
 
@@ -1053,7 +1059,17 @@ namespace Serial1602ShieldSystemUIController
 
           var mail = new MailMessage (emailAddress, emailAddress, subject, body);
 
-          var smtpClient = new SmtpClient (smtpServer);
+          var smtpClient = new SmtpClient (smtpServer, smtpPort);
+
+          var credentialsAreProvided = (smtpUsername != "user" &&
+                                       smtpPassword != "pass" &&
+                                       smtpUsername != "na" &&
+                                       smtpPassword != "na" &&
+                                       !String.IsNullOrWhiteSpace (smtpUsername) &&
+                                       !String.IsNullOrWhiteSpace (smtpPassword));
+
+          if (credentialsAreProvided)
+            smtpClient.Credentials = new NetworkCredential (smtpUsername, smtpPassword);
 
           smtpClient.Send (mail);
 
@@ -1062,6 +1078,9 @@ namespace Serial1602ShieldSystemUIController
           Console.WriteLine ("An error occurred while sending error report...");
           Console.WriteLine ("SMTP Server: " + smtpServer);
           Console.WriteLine ("Email Address: " + emailAddress);
+          Console.WriteLine ("SMTP Username: " + smtpUsername);
+          Console.WriteLine ("SMTP Password: [hidden]");
+          Console.WriteLine ("SMTP Port: " + smtpPort);
           Console.WriteLine ("");
           Console.WriteLine (ex.ToString ());
           Console.WriteLine ("");
