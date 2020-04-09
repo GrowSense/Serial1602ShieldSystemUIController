@@ -1055,7 +1055,7 @@ namespace Serial1602ShieldSystemUIController
       if (areDetailsProvided) {
         try {
           var subject = "Error: System UI controller on '" + SelfHostName + "'";
-          var body = "The following error was thrown by the system UI controller...\n\nSource host: " + SelfHostName + "\n\nDevice name: " + deviceName + "\n\n" + error.ToString ();
+          var body = "The following error was thrown by the system UI controller...\n\nSource host: " + SelfHostName + "\n\nDevice name: " + deviceName + "\n\n" + error.ToString () + "\n\n\n\n--------------------\n\nEmail sent by GrowSense serial 1602 LCD shield UI controller.";
 
           var mail = new MailMessage (emailAddress, emailAddress, subject, body);
 
