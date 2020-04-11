@@ -1068,8 +1068,10 @@ namespace Serial1602ShieldSystemUIController
                                        !String.IsNullOrWhiteSpace (smtpUsername) &&
                                        !String.IsNullOrWhiteSpace (smtpPassword));
 
-          if (credentialsAreProvided)
+          if (credentialsAreProvided) {
             smtpClient.Credentials = new NetworkCredential (smtpUsername, smtpPassword);
+            smtpClient.EnableSsl = true;
+          }
 
           smtpClient.Send (mail);
 
